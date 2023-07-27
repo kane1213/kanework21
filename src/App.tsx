@@ -1,6 +1,6 @@
 
 import './App.scss'
-import { Sprite, Stage  } from "react-pixi-fiber";
+import { Sprite, Stage, Container } from "react-pixi-fiber";
 import { Texture, Point }from 'pixi.js'
 import { useEffect, createRef } from 'react';
 import gsap from "gsap";
@@ -15,7 +15,7 @@ export default () => {
     const bunnyRotation = gsap.to(bunnyRef.current, {
       rotation: Math.PI * 2 , // 旋轉一周
       duration: 2, // 持續時間 2 秒
-      repeat: -1, // 無限重複
+      repeat: 2, // 無限重複
       // onUpdate: () => {
       //   // 在動畫更新時更新旋轉值
       //   bunnyRef.current = bunnyRef.current + 1;
@@ -38,16 +38,17 @@ export default () => {
     {/* <Bunny x={290} y={290}  ref={bunnyRef} />  */}
     {/* <Sprite  x={290} y={290} texture={Texture.from('/images/bunny.png')} ref={bunnyRef} anchor={new Point(0.5, 0.5)} /> */}
     {/* <Sprite texture={Texture.from('/images/cards/ace-of-cups.jpg')} x={0} y={0} zIndex={1} /> */}
-
-    {
-      cards.map((card: string, index: number) => {
-        const angle = cardSpacing * index;
-        console.log(angle)
-        // const x = centerY + radius * Math.cos((angle * Math.PI) / 180);
-        // const y = centerY + radius * Math.sin((angle * Math.PI) / 180);
-        return <Sprite key={card}  texture={Texture.from(`/images/cards/${card}.jpg`)} x={centerX} y={centerY} anchor={new Point(0.5, 1)} rotation={angle * Math.PI / 180} zIndex={index} />
-      })
-    }
+    <Container ref={bunnyRef}  x={centerX} y={centerY} >
+      {
+        cards.map((card: string, index: number) => {
+          const angle = cardSpacing * index;
+          // console.log(angle)
+          // const x = centerY + radius * Math.cos((angle * Math.PI) / 180);
+          // const y = centerY + radius * Math.sin((angle * Math.PI) / 180);
+          return <Sprite key={card} width={30} height={50} texture={Texture.from(`/images/cards/${card}.jpg`)} anchor={new Point(0.5, 7)} rotation={angle * Math.PI / 180} zIndex={index} />
+        })
+      }
+    </Container>
 
   </Stage>
 
