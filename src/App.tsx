@@ -2,21 +2,15 @@
 import './App.scss'
 import { Sprite, Stage  } from "react-pixi-fiber";
 import { Texture, Point }from 'pixi.js'
-import bunny from "/images/bunny.png";
-import { useEffect, useRef, createRef } from 'react';
+import { useEffect, createRef } from 'react';
 import gsap from "gsap";
 
 // const bunny: string = 'https://i.imgur.com/IaUrttj.png'
-const Bunny = (props: any) => <Sprite texture={Texture.from(bunny)} {...props} anchor={new Point(0.5, 0.5)} />;
-export default () => {
-  // const [rotate, setRotate] = useState<number>(0)
-  const bunnyRef = createRef<any>();
+// const Bunny = (props: any) => <Sprite texture={Texture.from(bunny)} {...props} anchor={new Point(0.5, 0.5)} />;
+import cards from '@/lib/cards'
 
-  // useEffect(() => {
-  //   setInterval(() => {
-  //     setRotate((prev: number) => prev + .05)
-  //   }, 50)
-  // }, [])
+export default () => {
+  const bunnyRef = createRef<any>();
   useEffect(() => {
     const bunnyRotation = gsap.to(bunnyRef.current, {
       rotation: Math.PI * 2 , // 旋轉一周
@@ -29,16 +23,32 @@ export default () => {
       // },
     });
 
-    console.log(bunnyRef.current)
+    console.log(cards)
 
     return () => {bunnyRotation.kill();} // 組件 unmount 時停止動畫
   }, []);
-
+  const width: number = document.documentElement.scrollWidth
+  const height: number = document.documentElement.scrollHeight
+  const centerX = width * .5
+  const centerY = height * .5
+  const radius = 150; 
+  const cardSpacing = 360 / cards.length;
   return <div className=" text-blue-600">
-  HELLO WORLD 2
-  <Stage options={{height: 600, width: 600, backgroundColor: '#eee' }}>
+  <Stage options={{height, width, backgroundColor: '#eee' }}>
     {/* <Bunny x={290} y={290}  ref={bunnyRef} />  */}
-    <Sprite  x={290} y={290} texture={Texture.from(bunny)} ref={bunnyRef} anchor={new Point(0.5, 0.5)} />
+    {/* <Sprite  x={290} y={290} texture={Texture.from('/images/bunny.png')} ref={bunnyRef} anchor={new Point(0.5, 0.5)} /> */}
+    {/* <Sprite texture={Texture.from('/images/cards/ace-of-cups.jpg')} x={0} y={0} zIndex={1} /> */}
+
+    {
+      cards.map((card: string, index: number) => {
+        const angle = cardSpacing * index;
+        console.log(angle)
+        // const x = centerY + radius * Math.cos((angle * Math.PI) / 180);
+        // const y = centerY + radius * Math.sin((angle * Math.PI) / 180);
+        return <Sprite key={card}  texture={Texture.from(`/images/cards/${card}.jpg`)} x={centerX} y={centerY} anchor={new Point(0.5, 1)} rotation={angle * Math.PI / 180} zIndex={index} />
+      })
+    }
+
   </Stage>
 
 </div>
