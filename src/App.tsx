@@ -20,7 +20,7 @@ function AppRoutes() {
   return <>
     <div className="nav-btns">
       {
-        ['Home', 'Game'].map((name: string) => <div onClick={() => { routerTo(name) }}>{ name }</div>)
+        ['Home', 'Game', "RX"].map((name: string) => <div key={name} onClick={() => { routerTo(name) }}>{ name }</div>)
       }
       
     </div>

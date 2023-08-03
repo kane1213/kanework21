@@ -7,6 +7,10 @@ import { Suspense } from 'react'
 const routes = [
   { path: '/', key: 'home', ele: lazy(() => import('@/pages/Home')), children: [] },
   { path: '/game', key: 'game', ele: lazy(() => import('@/pages/Game')), children: [] },
+  { path: '/rx', key: 'rx', ele: lazy(() => import('@/pages/RX')), children: [
+    { path: 'interval', key: 'interval', ele: lazy(() => import('@/pages/RX/Interval')) },
+    { path: 'of', key: 'of', ele: lazy(() => import('@/pages/RX/Of')) },
+  ] },
   { path: '*', key: 'none', ele: lazy(() => import('@/pages/None')), children: [] },
 ];
 
@@ -16,7 +20,7 @@ export default function Index() {
   const element = useRoutes(
     routes.map((route: any, index: number) => ({ 
       path: route.path,
-      element: <route.ele key={index} children={generateSuspectRoutes(route.children)} childlist={route.children.map((child:any) => ({ path: child.path, name: menuName[child.path] } ))} />,
+      element: <route.ele key={index} children={generateSuspectRoutes(route.children)} childlist={route.children.map((child:any) => ({ path: child.path, name: child.path } ))} />,
       ...(!(route.children && route.children.length > 0) 
         ? {}
         : {

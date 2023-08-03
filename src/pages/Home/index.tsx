@@ -1,5 +1,1 @@
-export default () => {
-
-
-  return <div>HOME</div>
-}
+export default () => <div>HOME</div>
