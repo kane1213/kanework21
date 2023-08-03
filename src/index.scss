@@ -1,3 +1,10 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+.nav-btns {
+  @apply flex items-center;
+  > div {
+    @apply mr-1 last:mr-0 p-1 rounded bg-blue-800 text-white text-xs cursor-pointer;
+  }
+}
