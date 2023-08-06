@@ -14,6 +14,10 @@ const routes = [
     { path: 'interval', key: 'interval', ele: lazy(() => import('@/pages/RX/Interval')) },
     { path: 'of', key: 'of', ele: lazy(() => import('@/pages/RX/Of')) },
     { path: 'merge', key: 'merge', ele: lazy(() => import('@/pages/RX/Merge')) },
+    { path: 'reduce', key: 'reduce', ele: lazy(() => import('@/pages/RX/Reduce')) },
+    { path: 'combine', key: 'combine', ele: lazy(() => import('@/pages/RX/Combine')) },
+    { path: 'partition', key: 'partition', ele: lazy(() => import('@/pages/RX/Partition')) },
+    { path: 'error', key: 'error', ele: lazy(() => import('@/pages/RX/Error')) },
   ] },
   { path: '*', key: 'none', ele: lazy(() => import('@/pages/None')), children: [] },
 ];
