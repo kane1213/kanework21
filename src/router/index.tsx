@@ -6,10 +6,14 @@ import { Suspense } from 'react'
 
 const routes = [
   { path: '/', key: 'home', ele: lazy(() => import('@/pages/Home')), children: [] },
-  { path: '/game', key: 'game', ele: lazy(() => import('@/pages/Game')), children: [] },
+  { path: '/game', key: 'game', ele: lazy(() => import('@/pages/Game')), children: [
+    { path: 'stream', key: 'stream', ele: lazy(() => import('@/pages/Game/Stream')) },
+    { path: 'selection', key: 'selection', ele: lazy(() => import('@/pages/Game/Selection')) },
+  ] },
   { path: '/rx', key: 'rx', ele: lazy(() => import('@/pages/RX')), children: [
     { path: 'interval', key: 'interval', ele: lazy(() => import('@/pages/RX/Interval')) },
     { path: 'of', key: 'of', ele: lazy(() => import('@/pages/RX/Of')) },
+    { path: 'merge', key: 'merge', ele: lazy(() => import('@/pages/RX/Merge')) },
   ] },
   { path: '*', key: 'none', ele: lazy(() => import('@/pages/None')), children: [] },
 ];
