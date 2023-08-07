@@ -1,7 +1,7 @@
 import './App.scss'
 import { BrowserRouter as Router, useNavigate } from 'react-router-dom'
 import { Suspense } from 'react'
-import BaseRouter from '@/router'
+import BaseRouter, { paths } from '@/router'
 
 export default () => <Router>
   <div className="main-work">
@@ -20,7 +20,12 @@ function AppRoutes() {
   return <>
     <div className="nav-btns">
       {
-        ['Home', 'Game/Stream', 'Game/Selection', "RX/of", "RX/interval", "RX/merge", "RX/reduce", "RX/combine", "RX/partition", "RX/error"].map((name: string) => <div key={name} onClick={() => { routerTo(name) }}>{ name }</div>)
+        ['/home'].concat(paths
+          .filter((path: string) => path !== '/' && path !== '*'))
+          .map((path: string) => {
+            const name = path.slice(1)
+            return <div key={name} onClick={() => { routerTo(name) }}>{ name }</div>
+          })
       }
       
     </div>

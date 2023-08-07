@@ -22,6 +22,17 @@ const routes = [
   { path: '*', key: 'none', ele: lazy(() => import('@/pages/None')), children: [] },
 ];
 
+export const paths = routes.reduce((sum: string[], route: any) => {
+
+  if (route.children.length === 0) {
+    return sum.concat(route.path)
+  } else {
+    return sum.concat(route.children.map((cr:any) => route.path + '/' + cr.path))
+  }
+
+
+},[])
+
 export const routeName: {[key: string ]: string} = routes.reduce((sum, cur) => ({ ...sum, [cur.key]: cur.path, [cur.path]: cur.key }), {})
 
 export default function Index() {
