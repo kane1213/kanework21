@@ -11,6 +11,7 @@ const routes = [
     { path: 'selection', key: 'selection', ele: lazy(() => import('@/pages/Game/Selection')) },
   ] },
   { path: '/rx', key: 'rx', ele: lazy(() => import('@/pages/RX')), children: [
+    { path: 'observable', key: 'observable', ele: lazy(() => import('@/pages/RX/Observable')) },
     { path: 'interval', key: 'interval', ele: lazy(() => import('@/pages/RX/Interval')) },
     { path: 'of', key: 'of', ele: lazy(() => import('@/pages/RX/Of')) },
     { path: 'merge', key: 'merge', ele: lazy(() => import('@/pages/RX/Merge')) },
@@ -19,6 +20,7 @@ const routes = [
     { path: 'partition', key: 'partition', ele: lazy(() => import('@/pages/RX/Partition')) },
     { path: 'error', key: 'error', ele: lazy(() => import('@/pages/RX/Error')) },
   ] },
+  { path: '/scroll', key: 'scroll', ele: lazy(() => import('@/pages/Scroll')), children: [] },
   { path: '*', key: 'none', ele: lazy(() => import('@/pages/None')), children: [] },
 ];
 
