@@ -1,0 +1,50 @@
+.tabs {
+  @apply flex items-end w-full mx-auto rounded-t-xl;
+  > div {
+    @apply flex-1 py-2 text-center rounded-t-xl;
+    &.active {
+      @apply flex-1 bg-white py-2 text-center shadow-[0_-3px_6px_0px_rgba(0,0,0,0.3)] rounded-t-xl relative z-10;
+      &::before {
+        content: '';
+        clip-path: url(#clipPathLeft);
+        // clip-path: circle(20% at 120% 120%);
+        @apply bg-white w-4 h-4 block absolute left-0 bottom-0 -translate-x-full shadow-[0_-10px_5px_0px_rgba(0,0,0,0.9)];
+      }
+
+      &::after {
+        content: '';
+        // clip-path: path("M 0.994,1 L 0,1 L 0,0 Q 0,1 0.994,1 Z");
+        clip-path: url(#clipPathRight);
+        @apply bg-white w-4 h-4 block absolute right-0 bottom-0 translate-x-full shadow-[0_-10px_5px_0px_rgba(0,0,0,0.9)];
+      }
+    }
+    &:nth-last-child(1) {
+      &.active {
+        &::after {
+          // @apply scale-150;
+          @apply hidden;
+        }
+      }
+    }
+    &:nth-child(1) {
+      &.active {
+        &::before {
+          // @apply scale-150;
+          @apply hidden;
+        }
+      }
+    }
+  }
+}
+
+.main-content {
+  @apply bg-white w-full min-h-[400px] justify-center items-center flex shadow-[0_0px_10px_0px_rgba(0,0,0,0.3)] rounded-xl;
+  &.active-0 {
+    @apply rounded-tl-none;
+  }
+  
+  &.active-2 {
+    @apply rounded-tr-none;
+  }
+}
+

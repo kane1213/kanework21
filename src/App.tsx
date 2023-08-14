@@ -30,6 +30,7 @@ function AppRoutes() {
       
     </div>
     <BaseRouter />
+    
   </>
   
 }
