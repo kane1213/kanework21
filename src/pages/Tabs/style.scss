@@ -3,7 +3,7 @@
   > div {
     @apply flex-1 py-2 text-center rounded-t-xl;
     &.active {
-      @apply flex-1 bg-white py-2 text-center shadow-[0_-3px_6px_0px_rgba(0,0,0,0.3)] rounded-t-xl relative z-10;
+      @apply flex-1 bg-white py-2 text-center shadow-[0_-3px_3px_0px_rgba(0,0,0,0.3)] rounded-t-xl relative z-10;
       &::before {
         content: '';
         clip-path: url(#clipPathLeft);

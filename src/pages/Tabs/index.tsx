@@ -11,7 +11,10 @@ export default () => {
     <div className="w-96 mx-auto bg-gray-100 rounded-t-xl">
       <div className="tabs">
         {
-          ['one', 'two', 'three'].map((num: string, idx: number) => <div key={num} onClick={() => { setActiveEvent(idx) }} className={(active === idx ? 'active':'') + ' cursor-pointer'} >{num}</div>)
+          ['one', 'two', 'three'].map((num: string, idx: number) => <div key={num} onClick={() => { setActiveEvent(idx) }} className={(active === idx ? 'active':'') + ' cursor-pointer'} >
+            {num}
+            {/* <div className="bg-white h-2 w-full absolute -bottom-0.5 scale-x-105 left-0"></div> */}
+          </div>)
         }
       </div>
 
