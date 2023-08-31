@@ -1,60 +1,75 @@
 import { useEffect } from "react";
+import audioData from '@/lib/box-ogg.js';
 
 const noteFrequencies = {
-  "c4": 261.63,
-  "d4": 293.66,
-  "e4": 329.63,
-  "f4": 349.23,
-  "g4": 392.00,
-  "a4": 440.00,
-  "b4": 493.88,
+  "C4": 261.63,
+  "D4": 293.66,
+  "E4": 329.63,
+  "F4": 349.23,
+  "G4": 392.00,
+  "A4": 440.00,
+  "B4": 493.88,
   // ... 添加更多音符
 };
 
+const noteIndex: string[] = ['c4'].concat(Object.keys(noteFrequencies))
+
 export default () => {
   const audioContext = new AudioContext();
-  async function loadMusicBoxSound() {
-    const response = await fetch('/music/26.ogg');
-    const arrayBuffer = await response.arrayBuffer();
-    console.log(arrayBuffer)
-    return await audioContext.decodeAudioData(arrayBuffer);
-  }
-
-  async function playMusicBox(music) {
+  async function playMusicBox(notes: string[]) {
   
-    const audioBuffer = await loadMusicBoxSound('https://onlinesequencer.net/app/instruments/26.ogg');
-    
-    const notes = music.split(" ");
-    let currentTime = audioContext.currentTime;
-    const noteDuration = 0.5; // 每个音符的持续时间
+    // const audioBuffer = await loadMusicBoxSound();
+  
+    let currentTime = 0;
+    const noteDuration = 1; // 每个音符的持续时间
   
     for (const note of notes) {
-      if (noteFrequencies.hasOwnProperty(note)) {
-        playNote(note, currentTime, noteDuration, audioBuffer);
+      if (audioData.hasOwnProperty(note)) {
+        playAudio(audioData[note].split(',')[1], currentTime)
         currentTime += noteDuration;
+      } else {
+        currentTime += noteDuration / .5;
       }
     }
   }
 
-  function playNote(note: any, startTime: any, duration: any, audioBuffer: any) {
-    const oscillator = audioContext.createBufferSource();
-    oscillator.buffer = audioBuffer;
-    oscillator.connect(audioContext.destination);
-    oscillator.playbackRate.value = (noteFrequencies[note]) / noteFrequencies["c4"];
-    oscillator.start(startTime);
-    oscillator.stop(startTime + duration);
+  function playAudio(base64Data: any, time: number) {
+
+    const binaryData = atob(base64Data);
+    const arrayBuffer = new ArrayBuffer(binaryData.length);
+    const view = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < binaryData.length; i++) {
+      view[i] = binaryData.charCodeAt(i);
+    }
+  
+    audioContext.decodeAudioData(arrayBuffer, (buffer) => {
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.destination);
+      source.start(time);
+      source.stop(time + 1);
+    });
   }
+
   
   
 
   useEffect(() => {
-
-    playMusicBox("c4 d4 e4 f4 g4 a4 b4 c4 d4 e4 f4 g4 a4 b4");
+    
+    
 
   }, [])
-
+  
+  function playMusicEvent () {
+    playMusicBox([
+      1,1,5,5,6,6,5,-1,,4,4,3,3,2,2,1,-1,
+      5,5,4,4,3,3,2,-1,5,5,4,4,3,3,2,-1,
+      1,1,5,5,6,6,5,-1,4,4,3,3,2,2,1
+    ].map(num => noteIndex[num]));
+  }
 
   return <>
   MUSIC
+  <div onClick={playMusicEvent} className="bg-blue-800 text-white cursor-pointer p-2 rounded">START</div>
   </>
 }
