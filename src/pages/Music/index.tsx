@@ -1,40 +1,40 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import audioData from '@/lib/box-ogg.js';
+import { Midi } from '@tonejs/midi'
 
-const noteFrequencies = {
-  "C4": 261.63,
-  "D4": 293.66,
-  "E4": 329.63,
-  "F4": 349.23,
-  "G4": 392.00,
-  "A4": 440.00,
-  "B4": 493.88,
-  // ... 添加更多音符
-};
-
-const noteIndex: string[] = ['c4'].concat(Object.keys(noteFrequencies))
+interface NoteData {
+  midi: number,
+  name: string,
+  time: number,
+  duration: number
+}
 
 export default () => {
+
+  // Object.keys(audioData).reduce((sum: any, key: string) => ({...sum, [key]: new AudioContext()}), {})
+  const noteList: string[] = Object.keys(audioData).map((key: string) => key)
+  const musics: string[] = DATA_DIRECTORY
+  
   const audioContext = new AudioContext();
-  async function playMusicBox(notes: string[]) {
-  
-    // const audioBuffer = await loadMusicBoxSound();
-  
-    let currentTime = 0;
-    const noteDuration = 1; // 每个音符的持续时间
-  
-    for (const note of notes) {
-      if (audioData.hasOwnProperty(note)) {
-        playAudio(audioData[note].split(',')[1], currentTime)
-        currentTime += noteDuration;
-      } else {
-        currentTime += noteDuration / .5;
+  const [chosen, setChosen] = useState<number[]>([])
+  const [midiTracks, setTracks] = useState<any>([])
+  const [notes, setNotes] = useState<any>([])
+  const [musicMidi, setMusicMidi] = useState<string>('')
+  const timeRate: number = 1
+  async function playMusicBox(notes: NoteData[]) {
+    let idx = 0;
+
+    notes.forEach((note: any, index: number) => {
+      if (audioData.hasOwnProperty(note.name)) {
+        // const { duration } = index > 0 ? notes[index - 1] : { duration: 0 }
+        const duration = index > 0 ? 0.5 : 0;
+        playAudio(note.name, audioData[note.name].split(',')[1], note.time + ( duration ), note.duration)
+        idx ++;
       }
-    }
+    })
   }
 
-  function playAudio(base64Data: any, time: number) {
-
+  function playAudio(note: string, base64Data: any, time: number, duration: number) {
     const binaryData = atob(base64Data);
     const arrayBuffer = new ArrayBuffer(binaryData.length);
     const view = new Uint8Array(arrayBuffer);
@@ -46,30 +46,75 @@ export default () => {
       const source = audioContext.createBufferSource();
       source.buffer = buffer;
       source.connect(audioContext.destination);
-      source.start(time);
-      source.stop(time + 1);
+      source.start(time * timeRate);
+      source.stop((time + 5) * timeRate);
     });
   }
 
   
-  
+  async function readMidiFile(name: string) {
+    const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
+    setTracks(tracks.filter((track: any) => track.notes.length > 0))
+    setChosen([])
+  }
 
-  useEffect(() => {
-    
-    
+  function chosenNewTrack (index: number) {
+    if (chosen.includes(index)) {
+      setChosen((prev: number[]) => prev.filter((preidx: number) => preidx !== index))
+    } else {
+      setChosen((prev: number[]) => prev.concat(index))
+    }
+  }
 
-  }, [])
+  function chosenMusicEvent (name: string) {
+    if (musicMidi === name) {
+      setMusicMidi('')
+    } else {
+      setMusicMidi(name)
+      readMidiFile(name)
+    }
+  }
+
   
   function playMusicEvent () {
-    playMusicBox([
-      1,1,5,5,6,6,5,-1,,4,4,3,3,2,2,1,-1,
-      5,5,4,4,3,3,2,-1,5,5,4,4,3,3,2,-1,
-      1,1,5,5,6,6,5,-1,4,4,3,3,2,2,1
-    ].map(num => noteIndex[num]));
+    if (chosen.length === 0) return
+    const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => track.notes)
+    if (_notes.length === 0) return
+    setNotes(_notes)
+
+    playMusicBox(_notes)
   }
+
+  useEffect(() => {
+
+
+  }, [])
 
   return <>
   MUSIC
-  <div onClick={playMusicEvent} className="bg-blue-800 text-white cursor-pointer p-2 rounded">START</div>
+  <div className="mt-3 flex items-center">
+    {
+      musics.map((music: string, index: number) => <div onClick={() => { chosenMusicEvent(music) }} className={`${musicMidi === music ? 'bg-red-800 text-white': 'border'} px-1 rounded mx-1 cursor-pointer `} key={music + '-' + index}>{ music }</div>)
+    }
+  </div>
+  
+  {
+    !!musicMidi &&
+      <div className="mt-3 flex items-center">
+        {
+          midiTracks.map((track: any, index: number) => <div onClick={() => { chosenNewTrack(index) }} className={`${chosen.includes(index) ? 'bg-red-800 text-white': 'border'} px-1 rounded mx-1 cursor-pointer `} key={track.name + '-' + index}>{ track.name || 'unknown' }</div>)
+        }
+      </div>
+  }
+
+  <div onClick={playMusicEvent} className="bg-blue-800 text-white cursor-pointer p-2 rounded inline-block mt-2">START</div>
+  <div>{ noteList.length }</div>
+  <div className="mt-2 p-3">
+    {
+      noteList.map((note: string) => <div className="text-xs border border-t-0 first:border-t-[1px]" key={note}>{ note }</div>)
+    }
+  </div>
+
+
   </>
 }
