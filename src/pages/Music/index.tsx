@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import audioData from '@/lib/box-ogg.js';
-
+import audioDataSource from '@/lib/box-ogg.ts';
+const audioData = audioDataSource as { [key: string]: any }
 const noteFrequencies = {
   "C4": 261.63,
   "D4": 293.66,
@@ -65,7 +65,7 @@ export default () => {
       1,1,5,5,6,6,5,-1,,4,4,3,3,2,2,1,-1,
       5,5,4,4,3,3,2,-1,5,5,4,4,3,3,2,-1,
       1,1,5,5,6,6,5,-1,4,4,3,3,2,2,1
-    ].map(num => noteIndex[num]));
+    ].map(num => num ? noteIndex[num] : noteIndex[0] ));
   }
 
   return <>

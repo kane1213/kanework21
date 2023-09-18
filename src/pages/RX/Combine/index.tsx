@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { combineLatest, merge, of, timer } from 'rxjs';
-import { reduce, map, filter, take } from 'rxjs/operators';
+import { combineLatest, timer } from 'rxjs';
+// import { reduce, map, filter, take } from 'rxjs/operators';
 
 export default () => {
   const [num, setNum] = useState<number| string>(0)

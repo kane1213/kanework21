@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { merge, of, interval } from 'rxjs';
-import { reduce, map, filter, take } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { reduce, map, filter } from 'rxjs/operators';
 
 export default () => {
   const [num, setNum] = useState<number>(0)

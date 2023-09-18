@@ -1,6 +1,6 @@
 import { Sprite, Stage, Container } from "react-pixi-fiber";
 import { Texture } from 'pixi.js'
-import { useEffect, createRef, useRef } from 'react';
+import { useEffect, createRef } from 'react';
 import gsap from "gsap";
 // const bunny: string = 'https://i.imgur.com/IaUrttj.png'
 // const Bunny = (props: any) => <Sprite texture={Texture.from(bunny)} {...props} anchor={new Point(0.5, 0.5)} />;
@@ -16,7 +16,7 @@ export default () => {
   const ratio: number = 5/3
   const _width: number = (width - cols * 2 + 2) / cols
   const _height: number = _width * ratio
-  let recordedChunks = useRef<any>([]);
+  // let recordedChunks = useRef<any>([]);
 
   function recordEvent () {
 
@@ -152,7 +152,7 @@ export default () => {
     // })
 
     
-    const { anims, bunny } = cardsAnimation()
+    const { anims } = cardsAnimation()
     
 
     return () => {
