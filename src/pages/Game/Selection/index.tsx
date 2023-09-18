@@ -171,14 +171,14 @@ export default () => {
 
     <Stage ref={stageRef} options={{height: Math.max(height, newHeight), width, background: '#eee' }}>
       {/* <Bunny x={290} y={290}  ref={bunnyRef} />  */}
-      {/* <Sprite  x={290} y={290} texture={Texture.from('/images/bunny.png')} ref={bunnyRef} anchor={new Point(0.5, 0.5)} /> */}
-      {/* <Sprite texture={Texture.from('/images/cards/ace-of-cups.jpg')} x={0} y={0} zIndex={1} /> */}
+      {/* <Sprite  x={290} y={290} texture={Texture.from('./images/bunny.png')} ref={bunnyRef} anchor={new Point(0.5, 0.5)} /> */}
+      {/* <Sprite texture={Texture.from('./images/cards/ace-of-cups.jpg')} x={0} y={0} zIndex={1} /> */}
       {/* x={centerX} y={centerY} */}
       <Container ref={bunnyRef}  >
 
         {
           cards.map((card: string, index: number) => {
-            return <Sprite key={card} width={1} height={5} scale={9} x={centerX} y={centerY} texture={Texture.from(`/images/cards/${card}.jpg`)} anchor={{ x: 0.5, y: 0.5 }} zIndex={index} />
+            return <Sprite key={card} width={1} height={5} scale={9} x={centerX} y={centerY} texture={Texture.from(`./images/cards/${card}.jpg`)} anchor={{ x: 0.5, y: 0.5 }} zIndex={index} />
             return null
           })
         }
@@ -186,7 +186,7 @@ export default () => {
         {/* {
           cards.map((card: string, index: number) => {
             const angle = cardSpacing * index;
-            return <Sprite key={card} width={30} height={50} texture={Texture.from(`/images/cards/${card}.jpg`)} anchor={{ x: 0.5, y: 1 }} rotation={angle * Math.PI / 180} zIndex={index} />
+            return <Sprite key={card} width={30} height={50} texture={Texture.from(`./images/cards/${card}.jpg`)} anchor={{ x: 0.5, y: 1 }} rotation={angle * Math.PI / 180} zIndex={index} />
           })
         } */}
       </Container>
