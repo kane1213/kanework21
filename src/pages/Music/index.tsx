@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import audioData from '@/lib/box-ogg.js';
 import { Midi } from '@tonejs/midi'
 import _ from 'lodash'
@@ -12,6 +12,8 @@ interface NoteData {
 export default () => {
 
   // Object.keys(audioData).reduce((sum: any, key: string) => ({...sum, [key]: new AudioContext()}), {})
+  const process = useRef<{ time: number, interval: any }>({ time: 0, interval: null })
+  const [currentTime, setCurrentTime] = useState<number>(0)
   const noteList: string[] = Object.keys(audioData).map((key: string) => key)
   const musics: string[] = DATA_DIRECTORY
   
@@ -20,6 +22,7 @@ export default () => {
   const [midiTracks, setTracks] = useState<any>([])
   const [notes, setNotes] = useState<any>([])
   const [musicMidi, setMusicMidi] = useState<string>('')
+  const [play, setPlay] = useState<boolean>(false)
   // const [page, setPage] = useState<number>(1)
   const timeRate: number = 1
   const noteNameGroup = useMemo(() => notes.length > 0 ? _.groupBy(notes, 'name') : {}, [notes])
@@ -75,9 +78,16 @@ export default () => {
   
   async function readMidiFile(name: string) {
     const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
-    setTracks(tracks.filter((track: any) => track.notes.length > 0))
-    setChosen([])
+    const _tracks = tracks.filter((track: any) => track.notes.length > 0)
+    setTracks(_tracks)
+    setChosen([0])
+    setPlay(true)
   }
+
+  useEffect(() => {
+    if (play) playMusicEvent()
+
+  }, [play])
 
   function chosenNewTrack (index: number) {
     if (chosen.includes(index)) {
@@ -97,22 +107,34 @@ export default () => {
   }
 
   
+  
   function playMusicEvent () {
+    
+    console.log(chosen)
     if (chosen.length === 0) return
     const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => track.notes)
     if (_notes.length === 0) return
     setNotes(_notes.slice(0, 20))
+    startTime()
+  }
 
-    // console.log(_notes)
-    // console.log(_.groupBy(_notes, 'name'))
-    // playMusicBox(_notes)
+  function startTime () {
+    if (process.current.interval) {
+      clearInterval(process.current.interval)
+    }
+    process.current.interval = setInterval(() => {
+      process.current.time += 0.5
+      setCurrentTime(Math.floor(process.current.time))
+      console.log(process.current.time)
+    }, 500)
   }
 
   useEffect(() => {
     const idx: number = 2
     setMusicMidi(musics[idx])
     readMidiFile(musics[idx])
-
+    // chosenNewTrack(0)
+    // chosenNewTrack()
   }, [])
 
   const filterdNotes: string[] = noteList
@@ -143,35 +165,29 @@ export default () => {
   <div className="mt-2 p-3 flex">
     
     <div className="titles">
-      {filterdNotes.map((note: string) => <div className="text-xs h-4 text-center border-t-0 first:border-t-[1px] border border-r-0 min-w-[30px]">{note}</div>)}
+      {filterdNotes.map((note: string) => <div className="text-xs h-4 text-center border-t-0 first:border-t-[1px] border min-w-[30px]">{note}</div>)}
     </div>
-    <div>
-
-      {
-        filterdNotes
-          .map((noteName: string) => <div className="text-xs border border-t-0 first:border-t-[1px] flex items-center">
-          {
-              <span className="border-r-[1px] min-w-[30px] text-center">
-              { noteName }
-            </span>
-            }
-          <div className="flex-1 relative h-4 overflow-x-auto">
-            <div className={`w-[${noteTimeRange.max * 100}px]`}>
-              { 
-                noteNameGroup.hasOwnProperty(noteName) && 
-                  noteNameGroup[noteName].map((note: any) => 
-                    <div className="absolute top-0 bg-gray-600 shadow-inner w-4 h-4" style={{ left: Math.floor(note.time / gap * 32)  }} key={noteName + note.time} />
-                    )
-              }
-
+    <div className="flex-1 relative">
+      
+      <div>
+        {
+          filterdNotes
+            .map((noteName: string) => <div className="text-xs border border-t-0 first:border-t-[1px] flex items-center  h-4">
+            <div className="flex-1 relative h-4">
+              <div className={`w-[${noteTimeRange.max * 100}px]`}>
+                { 
+                  noteNameGroup.hasOwnProperty(noteName) && 
+                    noteNameGroup[noteName].map((note: any) => 
+                      <div className="absolute top-0 bg-gray-600 shadow-inner w-4 h-4" style={{ left: Math.floor(note.time / gap * 32)  }} key={noteName + note.time} />
+                      )
+                }
+              </div>
             </div>
-
-
-          </div>
-        
-      </div>)
-      }
-
+          
+        </div>)
+        }
+      </div>
+      <div style={{ transform: `translateX(${currentTime * 16}px)` }} className="w-0.5 h-full bg-black absolute top-0 transition-transform ease-linear duration-1000" />
     </div>
 
   </div>
