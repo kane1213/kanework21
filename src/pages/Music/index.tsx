@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, createRef } from "react";
+import { Sprite, Stage, Container } from "react-pixi-fiber";
 import audioData from '@/lib/box-ogg.js';
 import { Midi } from '@tonejs/midi'
 import _ from 'lodash'
@@ -45,6 +46,10 @@ export default () => {
     }
     return minGap;
   }, [noteTimes])
+
+  const stageRef = createRef<any>();
+  const bunnyRef = createRef<any>();
+
   async function playMusicBox(notes: NoteData[]) {
     let idx = 0;
 
@@ -57,6 +62,8 @@ export default () => {
       }
     })
   }
+
+  
 
   function playAudio(note: string, base64Data: any, time: number, duration: number) {
     const binaryData = atob(base64Data);
@@ -81,12 +88,11 @@ export default () => {
     const _tracks = tracks.filter((track: any) => track.notes.length > 0)
     setTracks(_tracks)
     setChosen([0])
-    setPlay(true)
+    // setPlay(true)
   }
 
   useEffect(() => {
     if (play) playMusicEvent()
-
   }, [play])
 
   function chosenNewTrack (index: number) {
@@ -109,8 +115,6 @@ export default () => {
   
   
   function playMusicEvent () {
-    
-    console.log(chosen)
     if (chosen.length === 0) return
     const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => track.notes)
     if (_notes.length === 0) return
@@ -122,12 +126,14 @@ export default () => {
     if (process.current.interval) {
       clearInterval(process.current.interval)
     }
+    
     process.current.interval = setInterval(() => {
       process.current.time += 0.5
+      console.log({notes})
       setCurrentTime(Math.floor(process.current.time))
-      console.log(process.current.time)
     }, 500)
   }
+
 
   useEffect(() => {
     const idx: number = 2
@@ -169,7 +175,7 @@ export default () => {
     </div>
     <div className="flex-1 relative">
       
-      <div>
+      {/* <div>
         {
           filterdNotes
             .map((noteName: string) => <div className="text-xs border border-t-0 first:border-t-[1px] flex items-center  h-4">
@@ -187,7 +193,28 @@ export default () => {
         </div>)
         }
       </div>
-      <div style={{ transform: `translateX(${currentTime * 16}px)` }} className="w-0.5 h-full bg-black absolute top-0 transition-transform ease-linear duration-1000" />
+      <div style={{ transform: `translateX(${currentTime * 16}px)` }} className="w-0.5 h-full bg-black absolute top-0 transition-transform ease-linear duration-1000" /> */}
+
+  <Stage ref={stageRef} options={{height: 600, width: 800, background: '#eee' }}>
+      <Container ref={bunnyRef}  >
+
+        {/* {
+          cards.map((card: string, index: number) => {
+            return <Sprite key={card} width={1} height={5} scale={9} x={centerX} y={centerY} texture={Texture.from(`/images/cards/${card}.jpg`)} anchor={{ x: 0.5, y: 0.5 }} zIndex={index} />
+            return null
+          })
+        } */}
+
+        {/* {
+          cards.map((card: string, index: number) => {
+            const angle = cardSpacing * index;
+            return <Sprite key={card} width={30} height={50} texture={Texture.from(`/images/cards/${card}.jpg`)} anchor={{ x: 0.5, y: 1 }} rotation={angle * Math.PI / 180} zIndex={index} />
+          })
+        } */}
+      </Container>
+
+    </Stage>
+
     </div>
 
   </div>
