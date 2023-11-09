@@ -27,7 +27,12 @@ export default () => {
   const [play, setPlay] = useState<boolean>(false)
   // const [page, setPage] = useState<number>(1)
   const timeRate: number = 1
-  const noteNameGroup = useMemo(() => notes.length > 0 ? _.groupBy(notes, 'name') : {}, [notes])
+  const step = useRef<number>(0)
+
+
+  const noteNameGroup = useMemo(() => {
+    return notes.length > 0 ? _.groupBy(notes, 'name') : {}
+  }, [notes])
   const noteTimes = useMemo(() => notes.length > 0 ? _.uniq(_.map(notes, 'time')) : [], [notes])
   const defaultKeys = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
   const keyboards = {
@@ -43,8 +48,6 @@ export default () => {
   }
 
   const keyNames = Object.entries(keyboards).reduce<string[]>((sum, [num, keys]) => sum.concat(keys.map((key: string) => `${key}${num}`)), [])
-
-  console.log({keyboards, keyNames})
 
   const noteTimeRange = useMemo(() => 
     noteTimes.length > 0
@@ -69,21 +72,30 @@ export default () => {
   const bunnyRef = createRef<any>();
 
   async function playMusicBox(notes: NoteData[]) {
-    let idx = 0;
 
-    notes.forEach((note: any, index: number) => {
-      if (audioData.hasOwnProperty(note.name)) {
-        // const { duration } = index > 0 ? notes[index - 1] : { duration: 0 }
-        const duration = index > 0 ? 0.5 : 0;
-        playAudio(note.name, audioData[note.name].split(',')[1], note.time + ( duration ), note.duration)
-        idx ++;
-      }
+    const groupNotes = _.groupBy(notes, 'time')
+
+
+
+    Object.entries(_.fromPairs(_.sortBy(_.toPairs(groupNotes), [(pair) => parseFloat(pair[0])]))).forEach(([time, notes]: any, idx: number) => {
+      notes.forEach((_note: any) => {
+        playAudio(audioData[_note.name].split(',')[1], parseFloat(time) , 2)
+      })
     })
+    
+    // step.current += 1
+    // notes.forEach((note: any, index: number) => {
+
+    //   if (audioData.hasOwnProperty(note.name)) {
+    //     // const start = index > 0 ? 0.5 : 0;
+    //     playAudio(audioData[note.name].split(',')[1], note.time , note.duration)
+    //   }
+    // })
   }
 
   
 
-  function playAudio(note: string, base64Data: any, time: number, duration: number) {
+  function playAudio(base64Data: any, time: number, duration: number) {
     const binaryData = atob(base64Data);
     const arrayBuffer = new ArrayBuffer(binaryData.length);
     const view = new Uint8Array(arrayBuffer);
@@ -96,7 +108,7 @@ export default () => {
       source.buffer = buffer;
       source.connect(audioContext.destination);
       source.start(time * timeRate);
-      source.stop((time + 5) * timeRate);
+      source.stop((time + duration) * timeRate);
     });
   }
 
@@ -106,11 +118,11 @@ export default () => {
     const _tracks = tracks.filter((track: any) => track.notes.length > 0)
     setTracks(_tracks)
     setChosen([0])
-    // setPlay(true)
+    setPlay(true)
   }
 
   useEffect(() => {
-    if (play) playMusicEvent()
+    // if (play) playMusicEvent()
   }, [play])
 
   function chosenNewTrack (index: number) {
@@ -134,10 +146,19 @@ export default () => {
   
   function playMusicEvent () {
     if (chosen.length === 0) return
-    const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => track.notes)
+    const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => {
+      // return track.notes
+      const _newNotes = track.notes.map((note: any) => ({ ...note, name: note.name.replace('#', 'b'), time: note.time }))
+      return _newNotes
+      // return track.notes.map((note: any) => ({ ...note }))
+    })
     if (_notes.length === 0) return
-    setNotes(_notes.slice(0, 20))
-    startTime()
+    const _noteList = _notes.slice(0, 550)
+    setNotes(_noteList)
+    // startTime()
+
+
+    playMusicBox(_noteList)
   }
 
   function startTime () {
@@ -162,7 +183,9 @@ export default () => {
   }, [])
 
   const filterdNotes: string[] = noteList
-    .filter((noteName: string) => noteNameGroup.hasOwnProperty(noteName))
+    .filter((noteName: string) => true || noteNameGroup.hasOwnProperty(noteName))
+
+  // console.log({ noteNameGroup, noteList })
 
   return <>
   MUSIC
@@ -218,12 +241,10 @@ export default () => {
       {
         filterdNotes
           .map((noteName: string, index: number) => {
-            console.log({ noteName })
             return noteNameGroup.hasOwnProperty(noteName)  
               ? noteNameGroup[noteName].map((note: any, cIndex: number) => 
                 {
-                  
-                  return <Sprite key={noteName} width={5} height={5} texture={Texture.WHITE} tint="0x000000" x={index * 5} y={cIndex * 5} zIndex={index * 10 + cIndex} />  
+                  return <Sprite key={noteName + cIndex} width={5} height={5} texture={Texture.WHITE} tint="0x000000" x={index * 5} y={cIndex * 5} zIndex={index * 10 + cIndex} />  
                 }
                 )
               : null
