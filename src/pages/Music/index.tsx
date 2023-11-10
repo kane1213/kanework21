@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
-import { Sprite, Stage, Container } from "react-pixi-fiber";
+import { Sprite, Stage, Container, Text } from "react-pixi-fiber";
 import audioData from '@/lib/box-ogg.js';
 import { Midi } from '@tonejs/midi'
 import gsap from "gsap";
@@ -280,15 +280,17 @@ export default () => {
       </div>
       <div style={{ transform: `translateX(${currentTime * 16}px)` }} className="w-0.5 h-full bg-black absolute top-0 transition-transform ease-linear duration-1000" /> */}
 
-  <Stage ref={stageRef} options={{height: 600, width: 800, background: '#aaa' }}>
+  <Stage ref={stageRef} options={{height: 800, width: 800, background: '#aaa' }}>
 
-    <Sprite width={5} height={600} texture={Texture.WHITE} tint="0x000000" x={0} y={0} />
+    <Sprite width={5} height={800} texture={Texture.WHITE} tint="0x000000" x={0} y={0} />
 
       <Container ref={bunnyRef}>
         {
           ...Object.entries(noteNameGroup).map(([key, notes]: any, notesIndex: number): any => {
             return notes.map((note: any, noteIndex: number) => {
-              return <Sprite alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={note.time * 60} y={(notesIndex) * 20} zIndex={noteIndex} />  
+              return <Sprite alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={note.time * 60} y={(notesIndex) * 20} zIndex={noteIndex}>  
+                <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} />
+              </Sprite>
             })
             // return <Sprite key={key + notesIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={0} y={notesIndex * 20} zIndex={notesIndex} />  
           })
