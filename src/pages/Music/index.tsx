@@ -33,7 +33,7 @@ export default () => {
 
   
   const noteTimes = useMemo(() => notes.length > 0 ? _.uniq(_.map(notes, 'time')) : [], [notes])
-  const defaultKeys = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+  const defaultKeys = ['C', 'Cb', 'D', 'Db', 'E', 'F', 'Fb', 'G', 'Gb', 'A', 'Ab', 'B']
   const keyboards = {
     0: defaultKeys.slice(-2),
     1: defaultKeys.slice(),
@@ -49,9 +49,12 @@ export default () => {
   const noteNameGroup = useMemo(() => {
     if (notes.length === 0) return {}
     const groupNotes = _.groupBy(notes, 'name')
-    const useNumber: number[] = _.uniq(Object.keys(groupNotes).map((key: string) => parseInt(key[1])))
+
+    console.log(Object.keys(groupNotes))
+    // defaultKeys
+
+    const useNumber: number[] = _.uniq(Object.keys(groupNotes).map((key: string) => parseInt(key.slice(-1)[0])))
     return useNumber.reduce((sum: any, num: number) => {
-      console.log({num})
       keyboards[num].forEach((key: string) => {
         const noteKey = `${key}${num}`
         sum[noteKey] = groupNotes.hasOwnProperty(noteKey) ? groupNotes[noteKey] : []
@@ -108,24 +111,30 @@ export default () => {
   }
 
   function playAudioByNoteText (text: string) {
-    
-    playAudio(audioData[text].split(',')[1], 0, 10)
+    playAudio(audioData[text].split(',')[1], 0, 1.5)
   }
 
   function playAudio(base64Data: any, time: number, duration: number) {
-    const binaryData = atob(base64Data);
-    const arrayBuffer = new ArrayBuffer(binaryData.length);
-    const view = new Uint8Array(arrayBuffer);
-    for (let i = 0; i < binaryData.length; i++) {
-      view[i] = binaryData.charCodeAt(i);
-    }
-    audioContext.decodeAudioData(arrayBuffer, (buffer) => {
-      const source = audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(audioContext.destination);
-      source.start(time * timeRate);
-      source.stop((time + duration) * timeRate);
-    });
+
+
+    var snd = new Audio("data:audio/wav;base64," + base64Data);
+    snd.play();
+
+    // const binaryData = atob(base64Data);
+    // const arrayBuffer = new ArrayBuffer(binaryData.length);
+    // const view = new Uint8Array(arrayBuffer);
+    // for (let i = 0; i < binaryData.length; i++) {
+    //   view[i] = binaryData.charCodeAt(i);
+    // }
+    // const _audioContext = new AudioContext()
+    // _audioContext.decodeAudioData(arrayBuffer, (buffer) => {
+    //   const source = audioContext.createBufferSource();
+    //   source.buffer = buffer;
+    //   source.connect(audioContext.destination);
+    //   source.start(time * timeRate);
+    //   console.log({ time, duration })
+    //   source.stop((time + duration) * timeRate);
+    // });
   }
 
   
@@ -142,11 +151,15 @@ export default () => {
       bunnyRef.current.x = 10
       gsap.to(bunnyRef.current, {
         x: -bunnyRef.current.width,
-        duration: 10,
+        duration: 100,
         ease: "none",
+        onStart() {
+          console.log(bunnyRef.current.children)
+        },
         onUpdate() {
           const currentX = Math.floor(bunnyRef.current.x)
-          const equalZeroSprite = bunnyRef.current.children.filter((child: any) => (child.x + currentX) === 0)
+          
+          const equalZeroSprite = bunnyRef.current.children.filter((child: any) => Math.floor(child.x + currentX) === 0)
           if (equalZeroSprite.length > 0) {
             equalZeroSprite.forEach((sprite: any) => playAudioByNoteText(sprite.alt))
           }
@@ -207,7 +220,7 @@ export default () => {
 
 
   useEffect(() => {
-    const idx: number = 0
+    const idx: number = 2
     setMusicMidi(musics[idx])
     readMidiFile(musics[idx])
     // chosenNewTrack(0)
@@ -267,10 +280,6 @@ export default () => {
       </div>
       <div style={{ transform: `translateX(${currentTime * 16}px)` }} className="w-0.5 h-full bg-black absolute top-0 transition-transform ease-linear duration-1000" /> */}
 
-  {
-    Object.keys(noteNameGroup).map((key: string) => <div>{ key }</div>)
-  }
-
   <Stage ref={stageRef} options={{height: 600, width: 800, background: '#aaa' }}>
 
     <Sprite width={5} height={600} texture={Texture.WHITE} tint="0x000000" x={0} y={0} />
@@ -279,7 +288,7 @@ export default () => {
         {
           ...Object.entries(noteNameGroup).map(([key, notes]: any, notesIndex: number): any => {
             return notes.map((note: any, noteIndex: number) => {
-              return <Sprite alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={note.time * 40} y={(notesIndex) * 20} zIndex={noteIndex} />  
+              return <Sprite alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={note.time * 60} y={(notesIndex) * 20} zIndex={noteIndex} />  
             })
             // return <Sprite key={key + notesIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={0} y={notesIndex * 20} zIndex={notesIndex} />  
           })
