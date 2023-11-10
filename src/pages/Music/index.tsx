@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef, createRef } from "react";
 import { Sprite, Stage, Container } from "react-pixi-fiber";
 import audioData from '@/lib/box-ogg.js';
 import { Midi } from '@tonejs/midi'
+import gsap from "gsap";
 import _ from 'lodash'
 import { Texture } from "pixi.js";
 interface NoteData {
@@ -15,7 +16,7 @@ export default () => {
 
   // Object.keys(audioData).reduce((sum: any, key: string) => ({...sum, [key]: new AudioContext()}), {})
   const process = useRef<{ time: number, interval: any }>({ time: 0, interval: null })
-  const [currentTime, setCurrentTime] = useState<number>(0)
+  // const [currentTime, setCurrentTime] = useState<number>(0)
   const noteList: string[] = Object.keys(audioData).map((key: string) => key)
   const musics: string[] = DATA_DIRECTORY
   
@@ -30,13 +31,11 @@ export default () => {
   const step = useRef<number>(0)
 
 
-  const noteNameGroup = useMemo(() => {
-    return notes.length > 0 ? _.groupBy(notes, 'name') : {}
-  }, [notes])
+  
   const noteTimes = useMemo(() => notes.length > 0 ? _.uniq(_.map(notes, 'time')) : [], [notes])
-  const defaultKeys = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+  const defaultKeys = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
   const keyboards = {
-    0: defaultKeys.slice(0, 2),
+    0: defaultKeys.slice(-2),
     1: defaultKeys.slice(),
     2: defaultKeys.slice(),
     3: defaultKeys.slice(),
@@ -44,8 +43,22 @@ export default () => {
     5: defaultKeys.slice(),
     6: defaultKeys.slice(),
     7: defaultKeys.slice(),
-    8: defaultKeys.slice(2, 3),
+    8: defaultKeys.slice(0, 1),
   }
+
+  const noteNameGroup = useMemo(() => {
+    if (notes.length === 0) return {}
+    const groupNotes = _.groupBy(notes, 'name')
+    const useNumber: number[] = _.uniq(Object.keys(groupNotes).map((key: string) => parseInt(key[1])))
+    return useNumber.reduce((sum: any, num: number) => {
+      console.log({num})
+      keyboards[num].forEach((key: string) => {
+        const noteKey = `${key}${num}`
+        sum[noteKey] = groupNotes.hasOwnProperty(noteKey) ? groupNotes[noteKey] : []
+      })
+      return sum
+    }, {})
+  }, [notes])
 
   const keyNames = Object.entries(keyboards).reduce<string[]>((sum, [num, keys]) => sum.concat(keys.map((key: string) => `${key}${num}`)), [])
 
@@ -78,8 +91,9 @@ export default () => {
 
 
     Object.entries(_.fromPairs(_.sortBy(_.toPairs(groupNotes), [(pair) => parseFloat(pair[0])]))).forEach(([time, notes]: any, idx: number) => {
-      notes.forEach((_note: any) => {
-        playAudio(audioData[_note.name].split(',')[1], parseFloat(time) , 2)
+      notes.forEach((_note: any, index: number) => {
+        const extra: number = idx > 0 ? 1:0
+        playAudio(audioData[_note.name].split(',')[1], parseFloat(time) + extra , 2)
       })
     })
     
@@ -93,7 +107,10 @@ export default () => {
     // })
   }
 
-  
+  function playAudioByNoteText (text: string) {
+    
+    playAudio(audioData[text].split(',')[1], 0, 10)
+  }
 
   function playAudio(base64Data: any, time: number, duration: number) {
     const binaryData = atob(base64Data);
@@ -102,7 +119,6 @@ export default () => {
     for (let i = 0; i < binaryData.length; i++) {
       view[i] = binaryData.charCodeAt(i);
     }
-  
     audioContext.decodeAudioData(arrayBuffer, (buffer) => {
       const source = audioContext.createBufferSource();
       source.buffer = buffer;
@@ -122,8 +138,25 @@ export default () => {
   }
 
   useEffect(() => {
-    // if (play) playMusicEvent()
-  }, [play])
+    if (notes.length > 0) {
+      bunnyRef.current.x = 10
+      gsap.to(bunnyRef.current, {
+        x: -bunnyRef.current.width,
+        duration: 10,
+        ease: "none",
+        onUpdate() {
+          const currentX = Math.floor(bunnyRef.current.x)
+          const equalZeroSprite = bunnyRef.current.children.filter((child: any) => (child.x + currentX) === 0)
+          if (equalZeroSprite.length > 0) {
+            equalZeroSprite.forEach((sprite: any) => playAudioByNoteText(sprite.alt))
+          }
+        },
+        onComplete() {
+          console.log('done')
+        }
+      })
+    }
+  }, [notes])
 
   function chosenNewTrack (index: number) {
     if (chosen.includes(index)) {
@@ -142,7 +175,7 @@ export default () => {
     }
   }
 
-  
+  // C~G A~B
   
   function playMusicEvent () {
     if (chosen.length === 0) return
@@ -156,9 +189,8 @@ export default () => {
     const _noteList = _notes.slice(0, 550)
     setNotes(_noteList)
     // startTime()
-
-
-    playMusicBox(_noteList)
+    // playMusicBox(_noteList)
+    
   }
 
   function startTime () {
@@ -166,16 +198,16 @@ export default () => {
       clearInterval(process.current.interval)
     }
     
-    // process.current.interval = setInterval(() => {
-    //   process.current.time += 0.5
-    //   console.log({notes})
-    //   setCurrentTime(Math.floor(process.current.time))
-    // }, 500)
+    process.current.interval = setInterval(() => {
+      process.current.time += 0.5
+      // setCurrentTime(Math.floor(process.current.time))
+      bunnyRef.current.x += 1
+    }, 500)
   }
 
 
   useEffect(() => {
-    const idx: number = 2
+    const idx: number = 0
     setMusicMidi(musics[idx])
     readMidiFile(musics[idx])
     // chosenNewTrack(0)
@@ -184,7 +216,6 @@ export default () => {
 
   const filterdNotes: string[] = noteList
     .filter((noteName: string) => true || noteNameGroup.hasOwnProperty(noteName))
-
   // console.log({ noteNameGroup, noteList })
 
   return <>
@@ -236,24 +267,24 @@ export default () => {
       </div>
       <div style={{ transform: `translateX(${currentTime * 16}px)` }} className="w-0.5 h-full bg-black absolute top-0 transition-transform ease-linear duration-1000" /> */}
 
+  {
+    Object.keys(noteNameGroup).map((key: string) => <div>{ key }</div>)
+  }
+
   <Stage ref={stageRef} options={{height: 600, width: 800, background: '#aaa' }}>
+
+    <Sprite width={5} height={600} texture={Texture.WHITE} tint="0x000000" x={0} y={0} />
+
       <Container ref={bunnyRef}>
-      {
-        filterdNotes
-          .map((noteName: string, index: number) => {
-            return noteNameGroup.hasOwnProperty(noteName)  
-              ? noteNameGroup[noteName].map((note: any, cIndex: number) => 
-                {
-                  return <Sprite key={noteName + cIndex} width={5} height={5} texture={Texture.WHITE} tint="0x000000" x={index * 5} y={cIndex * 5} zIndex={index * 10 + cIndex} />  
-                }
-                )
-              : null
+        {
+          ...Object.entries(noteNameGroup).map(([key, notes]: any, notesIndex: number): any => {
+            return notes.map((note: any, noteIndex: number) => {
+              return <Sprite alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={note.time * 40} y={(notesIndex) * 20} zIndex={noteIndex} />  
+            })
+            // return <Sprite key={key + notesIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={0} y={notesIndex * 20} zIndex={notesIndex} />  
           })
-      }
-
-
+        }
       </Container>
-
     </Stage>
 
     </div>
