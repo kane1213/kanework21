@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
 import { Sprite, Stage, Container, Text } from "react-pixi-fiber";
-import audioData from '@/lib/box-ogg.js';
+import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
 import gsap from "gsap";
 import _ from 'lodash'
@@ -111,6 +111,14 @@ export default () => {
   }
 
   function playAudioByNoteText (text: string) {
+    // const convertTo = (text) => {
+    //   return !text.includes('b')
+    //     ? text
+    //     : text.replace('')
+
+    // }
+
+    console.log(audioData[text].split(',')[1])
     playAudio(audioData[text].split(',')[1], 0, 1.5)
   }
 
@@ -148,11 +156,12 @@ export default () => {
 
   useEffect(() => {
     if (notes.length > 0) {
-      bunnyRef.current.x = 10
+      bunnyRef.current.x = 100
       gsap.to(bunnyRef.current, {
         x: -bunnyRef.current.width,
-        duration: 100,
+        duration: 200,
         ease: "none",
+        delay: 300,
         onStart() {
           console.log(bunnyRef.current.children)
         },
@@ -288,7 +297,7 @@ export default () => {
         {
           ...Object.entries(noteNameGroup).map(([key, notes]: any, notesIndex: number): any => {
             return notes.map((note: any, noteIndex: number) => {
-              return <Sprite alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={note.time * 60} y={(notesIndex) * 20} zIndex={noteIndex}>  
+              return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={note.time * 60} y={(notesIndex) * 20} zIndex={noteIndex}>  
                 <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} />
               </Sprite>
             })
