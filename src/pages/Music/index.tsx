@@ -29,7 +29,7 @@ export default () => {
   // const [page, setPage] = useState<number>(1)
   const timeRate: number = 1
   const step = useRef<number>(0)
-
+  const videoRef = createRef<any>();
 
   
   const noteTimes = useMemo(() => notes.length > 0 ? _.uniq(_.map(notes, 'time')) : [], [notes])
@@ -86,6 +86,10 @@ export default () => {
 
   const stageRef = createRef<any>();
   const bunnyRef = createRef<any>();
+  const media_recorder = useRef<any>();
+  const finishNotes = useRef<any>([]);
+  const audioTrack = useRef<any>();
+  const webcamVideo = useRef<any>();
 
   async function playMusicBox(notes: NoteData[]) {
 
@@ -170,7 +174,8 @@ export default () => {
 
   
   async function readMidiFile(name: string) {
-    const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
+    // const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
+    const { tracks } = await Midi.fromUrl(name)
     const _tracks = tracks.filter((track: any) => track.notes.length > 0)
     setTracks(_tracks)
     setChosen([0])
@@ -179,25 +184,29 @@ export default () => {
 
   useEffect(() => {
     if (notes.length > 0) {
-      bunnyRef.current.x = 100
+      bunnyRef.current.x = 50
       gsap.to(bunnyRef.current, {
         x: -bunnyRef.current.width,
-        duration: 100,
+        duration: bunnyRef.current.width * .025,
         ease: "none",
-        delay: 2,
+        // delay: 0.5,
         onStart() {
           console.log(bunnyRef.current.children)
         },
         onUpdate() {
           const currentX = Math.floor(bunnyRef.current.x)
           
-          const equalZeroSprite = bunnyRef.current.children.filter((child: any) => Math.floor(child.x + currentX) === 0)
+          const equalZeroSprite = bunnyRef.current.children
+            .filter((child: any) => !finishNotes.current.includes(child))
+            .filter((child: any) => Math.floor(child.x + currentX) < 0)
           if (equalZeroSprite.length > 0) {
+            finishNotes.current = finishNotes.current.concat(equalZeroSprite)
             equalZeroSprite.forEach((sprite: any) => playAudioByNoteText(sprite.alt))
           }
         },
         onComplete() {
           console.log('done')
+          media_recorder.current.stop()
         }
       })
     }
@@ -235,12 +244,12 @@ export default () => {
     
     if (_notes.length === 0) return
 
-    console.log({ _notes })
+    // console.log({ _notes })
     const _noteList = _notes.slice(0, 550)
     setNotes(_noteList)
     // startTime()
     // playMusicBox(_noteList)
-    
+    recordEvent()
   }
 
   function startTime () {
@@ -255,6 +264,74 @@ export default () => {
     }, 500)
   }
 
+  function recordEvent () {
+
+    var chunks = [];
+    // Add audio track
+    var stream = stageRef.current._canvas.current.captureStream(60); // Capture canvas as a media stream
+    navigator.mediaDevices
+      .getUserMedia({ audio: true, video: false })
+      .then((media_stream) => {
+        // Retrieve audio track
+
+        console.log(media_stream.getAudioTracks())
+
+        audioTrack.current = media_stream.getAudioTracks()[0];
+        // Assign media stream to video element - with audio muted
+        webcamVideo.current = document.createElement("video");
+        webcamVideo.current.srcObject = media_stream;
+        webcamVideo.current.muted = true;
+        webcamVideo.current.style.display = "none";
+        document.body.appendChild(webcamVideo.current);
+        webcamVideo.current.onplay = true
+          // And start playing
+        webcamVideo.current.play();
+
+        
+        
+        stream.addTrack(audioTrack.current);
+
+
+        media_recorder.current = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
+        // Record data in chunks array when data is available
+        media_recorder.current.ondataavailable = (evt) => { chunks.push(evt.data); };
+        // Provide recorded data when recording stops
+        media_recorder.current.onstop = () => {on_media_recorder_stop(chunks);}
+        // Start recording using a 1s timeslice [ie data is made available every 1s)
+        media_recorder.current.start(1000);
+      })
+
+    // const stream = stageRef.current._canvas.current.captureStream(60); // Capture canvas as a media stream
+
+    // media_recorder.current = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
+    // // Record data in chunks array when data is available
+    // media_recorder.current.ondataavailable = (evt) => { chunks.push(evt.data); };
+    // // Provide recorded data when recording stops
+    // media_recorder.current.onstop = () => {on_media_recorder_stop(chunks);}
+    // // Start recording using a 1s timeslice [ie data is made available every 1s)
+    // media_recorder.current.start(1000);
+
+    function on_media_recorder_stop (chunks) {
+      // Gather chunks of video data into a blob and create an object URL
+      var blob = new Blob(chunks, {type: "video/webm" });
+      const recording_url = URL.createObjectURL(blob);
+      // Attach the object URL to an <a> element, setting the download file name
+      const a = document.createElement('a');
+      a.style = "display: none;";
+      a.href = recording_url;
+      a.download = "video.webm";
+      document.body.appendChild(a);
+      // Trigger the file download
+      a.click();
+      setTimeout(() => {
+        // Clean up - see https://stackoverflow.com/a/48968694 for why it is in a timeout
+        URL.revokeObjectURL(recording_url);
+        document.body.removeChild(a);
+      }, 0);
+
+    }
+  }
+
 
   useEffect(() => {
     const idx: number = 2
@@ -264,9 +341,11 @@ export default () => {
     // chosenNewTrack()
   }, [])
 
-  const filterdNotes: string[] = noteList
-    .filter((noteName: string) => true || noteNameGroup.hasOwnProperty(noteName))
+  // const filterdNotes: string[] = noteList
+  //   .filter((noteName: string) => true || noteNameGroup.hasOwnProperty(noteName))
   // console.log({ noteNameGroup, noteList })
+
+  const heightLength: number = Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).length
 
   return <>
   MUSIC
@@ -297,33 +376,13 @@ export default () => {
     </div> */}
     <div className="flex-1 relative">
       
-      {/* <div>
-        {
-          filterdNotes
-            .map((noteName: string) => <div className="text-xs border border-t-0 first:border-t-[1px] flex items-center  h-4">
-            <div className="flex-1 relative h-4">
-              <div className={`w-[${noteTimeRange.max * 100}px]`}>
-                { 
-                  noteNameGroup.hasOwnProperty(noteName) && 
-                    noteNameGroup[noteName].map((note: any) => 
-                      <div className="absolute top-0 bg-gray-600 shadow-inner w-4 h-4" style={{ left: Math.floor(note.time / gap * 32)  }} key={noteName + note.time} />
-                      )
-                }
-              </div>
-            </div>
-          
-        </div>)
-        }
-      </div>
-      <div style={{ transform: `translateX(${currentTime * 16}px)` }} className="w-0.5 h-full bg-black absolute top-0 transition-transform ease-linear duration-1000" /> */}
+  <Stage ref={stageRef} options={{height: heightLength * 20, width: 800, background: '#aaa' }}>
 
-  <Stage ref={stageRef} options={{height: 1800, width: 800, background: '#aaa' }}>
-
-    <Sprite width={5} height={1800} texture={Texture.WHITE} tint="0x000000" x={0} y={0} />
+    <Sprite width={5} height={heightLength * 20} texture={Texture.WHITE} tint="0x000000" x={0} y={0} />
 
       <Container ref={bunnyRef}>
         {
-          ...Object.entries(noteNameGroup).map(([key, notes]: any, notesIndex: number): any => {
+          ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(([key, notes]: any, notesIndex: number): any => {
             return notes.map((note: any, noteIndex: number) => {
               return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={note.time * 60} y={(notesIndex) * 20} zIndex={noteIndex}>  
                 <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} />
@@ -334,7 +393,7 @@ export default () => {
         }
       </Container>
     </Stage>
-
+    <video ref={videoRef} />
     </div>
 
   </div>
