@@ -118,8 +118,27 @@ export default () => {
 
     // }
 
-    console.log(audioData[text].split(',')[1])
-    playAudio(audioData[text].split(',')[1], 0, 1.5)
+    const convertNote = (text: string) => {
+      const notes = ['Cb', 'Db', 'Fb','Gb','Ab']
+      const _num = text.slice(-1)[0]
+      const _n = text.substring(0, 2)
+      const _idx = notes.indexOf(_n)
+      if (_idx - 1 < 0) {
+        return notes.slice(-1)[0] + _num
+      } else {
+        return notes[_idx - 1] + _num
+      }
+
+
+
+    }
+
+    const _text = !text.includes('b')
+      ? text
+      : convertNote(text)
+    if (_text.includes('b')) console.log(_text)
+    // console.log(audioData[text].split(',')[1])
+    playAudio(audioData[_text].split(',')[1], 0, 1.5)
   }
 
   function playAudio(base64Data: any, time: number, duration: number) {
@@ -159,9 +178,9 @@ export default () => {
       bunnyRef.current.x = 100
       gsap.to(bunnyRef.current, {
         x: -bunnyRef.current.width,
-        duration: 200,
+        duration: 100,
         ease: "none",
-        delay: 300,
+        delay: 2,
         onStart() {
           console.log(bunnyRef.current.children)
         },
