@@ -33,7 +33,7 @@ export default () => {
 
   
   const noteTimes = useMemo(() => notes.length > 0 ? _.uniq(_.map(notes, 'time')) : [], [notes])
-  const defaultKeys = ['C', 'Cb', 'D', 'Db', 'E', 'F', 'Fb', 'G', 'Gb', 'A', 'Ab', 'B']
+  const defaultKeys = ['C', 'Cb', 'C#', 'D', 'Db', 'D#', 'E', 'F', 'Fb', 'F#', 'G', 'Gb', 'G#', 'A', 'Ab', 'A#', 'B']
   const keyboards = {
     0: defaultKeys.slice(-2),
     1: defaultKeys.slice(),
@@ -133,18 +133,22 @@ export default () => {
 
     }
 
-    const _text = !text.includes('b')
-      ? text
-      : convertNote(text)
-    if (_text.includes('b')) console.log(_text)
+    // const _text = !text.includes('b')
+    //   ? text
+    //   : convertNote(text)
+    // if (_text.includes('b')) console.log(_text)
     // console.log(audioData[text].split(',')[1])
-    playAudio(audioData[_text].split(',')[1], 0, 1.5)
+    const _text = text === 'Db5'
+      ? 'Gb5'
+      : text
+
+    playAudio(audioData[_text], 0, 1.5)
   }
 
   function playAudio(base64Data: any, time: number, duration: number) {
 
 
-    var snd = new Audio("data:audio/wav;base64," + base64Data);
+    var snd = new Audio(base64Data); // "data:audio/wav;base64," + 
     snd.play();
 
     // const binaryData = atob(base64Data);
@@ -222,11 +226,16 @@ export default () => {
     if (chosen.length === 0) return
     const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => {
       // return track.notes
-      const _newNotes = track.notes.map((note: any) => ({ ...note, name: note.name.replace('#', 'b'), time: note.time }))
+      const _newNotes = track.notes.map((note: any) => ({ ...note, name: note.name, time: note.time }))
       return _newNotes
       // return track.notes.map((note: any) => ({ ...note }))
     })
+
+    // const _notes = Object.keys(audioData).filter((name: string) => name.includes('b')).map((name: string) => ({ name, time: 5 }))
+    
     if (_notes.length === 0) return
+
+    console.log({ _notes })
     const _noteList = _notes.slice(0, 550)
     setNotes(_noteList)
     // startTime()
@@ -308,9 +317,9 @@ export default () => {
       </div>
       <div style={{ transform: `translateX(${currentTime * 16}px)` }} className="w-0.5 h-full bg-black absolute top-0 transition-transform ease-linear duration-1000" /> */}
 
-  <Stage ref={stageRef} options={{height: 800, width: 800, background: '#aaa' }}>
+  <Stage ref={stageRef} options={{height: 1800, width: 800, background: '#aaa' }}>
 
-    <Sprite width={5} height={800} texture={Texture.WHITE} tint="0x000000" x={0} y={0} />
+    <Sprite width={5} height={1800} texture={Texture.WHITE} tint="0x000000" x={0} y={0} />
 
       <Container ref={bunnyRef}>
         {
