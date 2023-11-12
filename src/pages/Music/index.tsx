@@ -119,7 +119,6 @@ export default () => {
   }
 
   function playAudio(base64Data: any, time: number, duration: number) {
-
     var audio = audioContext.createBufferSource();
 
     // 解碼音樂 base64 字串
@@ -135,39 +134,6 @@ export default () => {
     });
 
 
-    // if (!soundRef.current) {
-    //   soundRef.current = new Audio(base64Data);
-    // } else {
-    //   soundRef.current.src = base64Data
-    // }
-    // // var snd = new Audio(base64Data); // "data:audio/wav;base64," + 
-    // soundRef.current.play();
-    
-    // snd.play();
-
-  //   var audioNode = audioContext.createMediaElementSource(snd);
-
-  // // 将音频元素连接到视频流
-  //     audioNode.connect(audioContext.destination);
-
-  //     // 播放音符
-  //     snd.play();
-
-    // const binaryData = atob(base64Data);
-    // const arrayBuffer = new ArrayBuffer(binaryData.length);
-    // const view = new Uint8Array(arrayBuffer);
-    // for (let i = 0; i < binaryData.length; i++) {
-    //   view[i] = binaryData.charCodeAt(i);
-    // }
-    // const _audioContext = new AudioContext()
-    // _audioContext.decodeAudioData(arrayBuffer, (buffer) => {
-    //   const source = audioContext.createBufferSource();
-    //   source.buffer = buffer;
-    //   source.connect(audioContext.destination);
-    //   source.start(time * timeRate);
-    //   console.log({ time, duration })
-    //   source.stop((time + duration) * timeRate);
-    // });
   }
   
   function base64ToArrayBuffer(base64) {
@@ -182,8 +148,8 @@ export default () => {
 
 
   async function readMidiFile(name: string) {
-    const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
-    // const { tracks } = await Midi.fromUrl(name)
+    // const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
+    const { tracks } = await Midi.fromUrl(name)
     const _tracks = tracks.filter((track: any) => track.notes.length > 0)
     setTracks(_tracks)
     setChosen([0])
@@ -214,9 +180,13 @@ export default () => {
         },
         onComplete() {
           console.log('done')
+          console.log(media_recorder.current)
           media_recorder.current.stop()
         }
       })
+
+    recordEvent()
+
     }
   }, [notes])
 
@@ -255,50 +225,76 @@ export default () => {
     // console.log({ _notes })
     const _noteList = _notes.slice(0, 550)
     setNotes(_noteList)
+
+    
+
     // startTime()
     // playMusicBox(_noteList)
-    recordEvent()
+    // setTimeout(recordEvent, 200)
+    // recordEvent()
   }
 
-  function startTime () {
-    if (process.current.interval) {
-      clearInterval(process.current.interval)
-    }
-    
-    process.current.interval = setInterval(() => {
-      process.current.time += 0.5
-      // setCurrentTime(Math.floor(process.current.time))
-      bunnyRef.current.x += 1
-    }, 500)
+  // 音符轉換為頻率
+  function noteToFrequency() {
+    // 這裡使用的是示例，您需要根據實際情況轉換音符為頻率
+    return 440.0;
   }
+
 
   function recordEvent () {
 
     var chunks = [];
     // Add audio track
-    var stream = stageRef.current._canvas.current.captureStream(60); // Capture canvas as a media stream
-    // stream.addTrack(audioTrack.current);
-
+    
     
 
-    function on_media_recorder_stop (chunks) {
+    var stream = stageRef.current._canvas.current.captureStream(60); // Capture canvas as a media stream
+    
+    console.log(audioContext.destination)
+    
+    media_recorder.current = new MediaRecorder(stream);
+
+
+
+
+    media_recorder.current.ondataavailable = (e: any) => {
+      chunks.push(e.data);
+    };
+    media_recorder.current.onstop = () => {
+      on_media_recorder_stop()
+    }
+    media_recorder.current.start()
+    
+
+    function on_media_recorder_stop () {
       // Gather chunks of video data into a blob and create an object URL
       var blob = new Blob(chunks, {type: "video/webm" });
       const recording_url = URL.createObjectURL(blob);
       // Attach the object URL to an <a> element, setting the download file name
-      const a = document.createElement('a');
-      a.style = "display: none;";
-      a.href = recording_url;
-      a.download = "video.webm";
-      document.body.appendChild(a);
-      // Trigger the file download
-      a.click();
-      setTimeout(() => {
-        // Clean up - see https://stackoverflow.com/a/48968694 for why it is in a timeout
-        URL.revokeObjectURL(recording_url);
-        document.body.removeChild(a);
-      }, 0);
+      // const a = document.createElement('a');
+      // a.style = "display: none;";
+      // a.href = recording_url;
+      // a.download = "video.webm";
+      // document.body.appendChild(a);
+      // // Trigger the file download
+      // a.click();
+      // setTimeout(() => {
+      //   // Clean up - see https://stackoverflow.com/a/48968694 for why it is in a timeout
+      //   URL.revokeObjectURL(recording_url);
+      //   document.body.removeChild(a);
+      // }, 0);
 
+
+      var video = document.createElement('video');
+      // video.addAttribute('video')
+    
+      // 設置影片源為合併後的影片
+      video.src = recording_url;
+      
+      document.body.appendChild(video)
+      // 播放影片
+      video.play();
+      
     }
   }
 
