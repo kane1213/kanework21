@@ -115,38 +115,7 @@ export default () => {
   }
 
   function playAudioByNoteText (text: string) {
-    // const convertTo = (text) => {
-    //   return !text.includes('b')
-    //     ? text
-    //     : text.replace('')
-
-    // }
-
-    const convertNote = (text: string) => {
-      const notes = ['Cb', 'Db', 'Fb','Gb','Ab']
-      const _num = text.slice(-1)[0]
-      const _n = text.substring(0, 2)
-      const _idx = notes.indexOf(_n)
-      if (_idx - 1 < 0) {
-        return notes.slice(-1)[0] + _num
-      } else {
-        return notes[_idx - 1] + _num
-      }
-
-
-
-    }
-
-    // const _text = !text.includes('b')
-    //   ? text
-    //   : convertNote(text)
-    // if (_text.includes('b')) console.log(_text)
-    // console.log(audioData[text].split(',')[1])
-    const _text = text === 'Db5'
-      ? 'Gb5'
-      : text
-
-    playAudio(audioData[_text], 0, 1.5)
+    playAudio(audioData[text], 0, 1.5)
   }
 
   function playAudio(base64Data: any, time: number, duration: number) {
@@ -174,8 +143,8 @@ export default () => {
 
   
   async function readMidiFile(name: string) {
-    // const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
-    const { tracks } = await Midi.fromUrl(name)
+    const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
+    // const { tracks } = await Midi.fromUrl(name)
     const _tracks = tracks.filter((track: any) => track.notes.length > 0)
     setTracks(_tracks)
     setChosen([0])
@@ -291,7 +260,7 @@ export default () => {
         
         stream.addTrack(audioTrack.current);
 
-
+        alert("CC")
         media_recorder.current = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
         // Record data in chunks array when data is available
         media_recorder.current.ondataavailable = (evt) => { chunks.push(evt.data); };
