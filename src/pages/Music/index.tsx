@@ -20,18 +20,18 @@ export default () => {
   const noteList: string[] = Object.keys(audioData).map((key: string) => key)
   const musics: string[] = DATA_DIRECTORY
   
-  const audioContext = new AudioContext();
   const [chosen, setChosen] = useState<number[]>([])
   const [midiTracks, setTracks] = useState<any>([])
   const [notes, setNotes] = useState<any>([])
   const [musicMidi, setMusicMidi] = useState<string>('')
   const [play, setPlay] = useState<boolean>(false)
   // const [page, setPage] = useState<number>(1)
-  const timeRate: number = 1
-  const step = useRef<number>(0)
+  // const timeRate: number = 1
+  // const step = useRef<number>(0)
+  const soundRef = useRef<any>()
   const videoRef = createRef<any>();
+  // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-  
   const noteTimes = useMemo(() => notes.length > 0 ? _.uniq(_.map(notes, 'time')) : [], [notes])
   const defaultKeys = ['C', 'Cb', 'C#', 'D', 'Db', 'D#', 'E', 'F', 'Fb', 'F#', 'G', 'Gb', 'G#', 'A', 'Ab', 'A#', 'B']
   const keyboards = {
@@ -89,7 +89,7 @@ export default () => {
   const media_recorder = useRef<any>();
   const finishNotes = useRef<any>([]);
   const audioTrack = useRef<any>();
-  const webcamVideo = useRef<any>();
+
 
   async function playMusicBox(notes: NoteData[]) {
 
@@ -120,9 +120,24 @@ export default () => {
 
   function playAudio(base64Data: any, time: number, duration: number) {
 
+    if (!soundRef.current) {
+      soundRef.current = new Audio(base64Data);
+    } else {
+      soundRef.current.src = base64Data
+    }
+    // var snd = new Audio(base64Data); // "data:audio/wav;base64," + 
+    soundRef.current.play();
+    console.log(soundRef.current)
+    
+    // snd.play();
 
-    var snd = new Audio(base64Data); // "data:audio/wav;base64," + 
-    snd.play();
+  //   var audioNode = audioContext.createMediaElementSource(snd);
+
+  // // 将音频元素连接到视频流
+  //     audioNode.connect(audioContext.destination);
+
+  //     // 播放音符
+  //     snd.play();
 
     // const binaryData = atob(base64Data);
     // const arrayBuffer = new ArrayBuffer(binaryData.length);
@@ -238,47 +253,10 @@ export default () => {
     var chunks = [];
     // Add audio track
     var stream = stageRef.current._canvas.current.captureStream(60); // Capture canvas as a media stream
-    navigator.mediaDevices
-      .getUserMedia({ audio: true, video: false })
-      .then((media_stream) => {
-        // Retrieve audio track
 
-        console.log(media_stream.getAudioTracks())
+    stream.addTrack(audioTrack.current);
 
-        audioTrack.current = media_stream.getAudioTracks()[0];
-        // Assign media stream to video element - with audio muted
-        webcamVideo.current = document.createElement("video");
-        webcamVideo.current.srcObject = media_stream;
-        webcamVideo.current.muted = true;
-        webcamVideo.current.style.display = "none";
-        document.body.appendChild(webcamVideo.current);
-        webcamVideo.current.onplay = true
-          // And start playing
-        webcamVideo.current.play();
-
-        
-        
-        stream.addTrack(audioTrack.current);
-
-        alert("CC")
-        media_recorder.current = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
-        // Record data in chunks array when data is available
-        media_recorder.current.ondataavailable = (evt) => { chunks.push(evt.data); };
-        // Provide recorded data when recording stops
-        media_recorder.current.onstop = () => {on_media_recorder_stop(chunks);}
-        // Start recording using a 1s timeslice [ie data is made available every 1s)
-        media_recorder.current.start(1000);
-      })
-
-    // const stream = stageRef.current._canvas.current.captureStream(60); // Capture canvas as a media stream
-
-    // media_recorder.current = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
-    // // Record data in chunks array when data is available
-    // media_recorder.current.ondataavailable = (evt) => { chunks.push(evt.data); };
-    // // Provide recorded data when recording stops
-    // media_recorder.current.onstop = () => {on_media_recorder_stop(chunks);}
-    // // Start recording using a 1s timeslice [ie data is made available every 1s)
-    // media_recorder.current.start(1000);
+    
 
     function on_media_recorder_stop (chunks) {
       // Gather chunks of video data into a blob and create an object URL
