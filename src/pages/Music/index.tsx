@@ -30,7 +30,7 @@ export default () => {
   // const step = useRef<number>(0)
   const soundRef = useRef<any>()
   const videoRef = createRef<any>();
-  // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
   const noteTimes = useMemo(() => notes.length > 0 ? _.uniq(_.map(notes, 'time')) : [], [notes])
   const defaultKeys = ['C', 'Cb', 'C#', 'D', 'Db', 'D#', 'E', 'F', 'Fb', 'F#', 'G', 'Gb', 'G#', 'A', 'Ab', 'A#', 'B']
@@ -50,7 +50,7 @@ export default () => {
     if (notes.length === 0) return {}
     const groupNotes = _.groupBy(notes, 'name')
 
-    console.log(Object.keys(groupNotes))
+    // console.log(Object.keys(groupNotes))
     // defaultKeys
 
     const useNumber: number[] = _.uniq(Object.keys(groupNotes).map((key: string) => parseInt(key.slice(-1)[0])))
@@ -120,14 +120,28 @@ export default () => {
 
   function playAudio(base64Data: any, time: number, duration: number) {
 
-    if (!soundRef.current) {
-      soundRef.current = new Audio(base64Data);
-    } else {
-      soundRef.current.src = base64Data
-    }
-    // var snd = new Audio(base64Data); // "data:audio/wav;base64," + 
-    soundRef.current.play();
-    console.log(soundRef.current)
+    var audio = audioContext.createBufferSource();
+
+    // 解碼音樂 base64 字串
+    audioContext.decodeAudioData(base64ToArrayBuffer(base64Data), function (buffer) {
+        // 設置 Audio 元素的音訊緩衝
+        audio.buffer = buffer;
+
+        // 連接 Audio 元素到音訊輸出
+        audio.connect(audioContext.destination);
+
+        // 播放音樂
+        audio.start();
+    });
+
+
+    // if (!soundRef.current) {
+    //   soundRef.current = new Audio(base64Data);
+    // } else {
+    //   soundRef.current.src = base64Data
+    // }
+    // // var snd = new Audio(base64Data); // "data:audio/wav;base64," + 
+    // soundRef.current.play();
     
     // snd.play();
 
@@ -155,8 +169,18 @@ export default () => {
     //   source.stop((time + duration) * timeRate);
     // });
   }
-
   
+  function base64ToArrayBuffer(base64) {
+    var binary_string = window.atob(base64.split(',')[1]);
+    var len = binary_string.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+
   async function readMidiFile(name: string) {
     const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
     // const { tracks } = await Midi.fromUrl(name)
@@ -253,8 +277,7 @@ export default () => {
     var chunks = [];
     // Add audio track
     var stream = stageRef.current._canvas.current.captureStream(60); // Capture canvas as a media stream
-
-    stream.addTrack(audioTrack.current);
+    // stream.addTrack(audioTrack.current);
 
     
 
