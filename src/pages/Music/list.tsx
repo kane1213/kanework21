@@ -5,9 +5,7 @@ import { Midi } from '@tonejs/midi'
 import gsap from "gsap";
 import _ from 'lodash'
 import { Texture } from "pixi.js";
-import { useNavigate, useLocation } from "react-router-dom";
-import noteBall from '/public/images/musicbox/noteball.png';
-
+import { useNavigate } from "react-router-dom";
 interface NoteData {
   midi: number,
   name: string,
@@ -15,15 +13,13 @@ interface NoteData {
   duration: number
 }
 
-export default (props: any) => {
-  const CANVAS_WEIGHT: number = 1280
-  const CANVAS_HEIGHT: number = 720
-  const location = useLocation()
-  const [name, chosens] = (location.pathname.split('/').slice(-2))
-  const [chosen, setChosen] = useState<number[]>(chosens.split(',').map((val: string) => parseInt(val)) || [])
+export default () => {
+  const router = useNavigate()
+  const musics: string[] = DATA_DIRECTORY
+  const [chosen, setChosen] = useState<number[]>([])
   const [midiTracks, setTracks] = useState<any>([])
   const [notes, setNotes] = useState<any>([])
-  const [musicMidi, setMusicMidi] = useState<string>(name)
+  const [musicMidi, setMusicMidi] = useState<string>('')
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   // const [audios, setAudios] = useState<HTMLAudioElement[]>()
 
@@ -54,11 +50,8 @@ export default (props: any) => {
     }, {})
   }, [notes])
 
-  const NOTE_SIZE: number = 16
-
   const stageRef = createRef<any>();
   const bunnyRef = createRef<any>();
-  const playingLineRef = createRef<any>();
   const media_recorder = useRef<any>();
   const finishNotes = useRef<any>([]);
 
@@ -97,24 +90,27 @@ export default (props: any) => {
     // const { tracks } = await Midi.fromUrl(name)
     const _tracks = tracks.filter((track: any) => track.notes.length > 0)
     setTracks(_tracks)
+    setChosen([0])
   }
 
   useEffect(() => {
     if (notes.length > 0) {
-      bunnyRef.current.y = CANVAS_HEIGHT
+      
+      bunnyRef.current.x = 50
       gsap.to(bunnyRef.current, {
-        y: -bunnyRef.current.height,
-        duration: bunnyRef.current.height * .025,
+        x: -bunnyRef.current.width,
+        duration: bunnyRef.current.width * .025,
         ease: "none",
         // delay: 0.5,
         onStart() {
           // console.log(bunnyRef.current.children)
         },
         onUpdate() {
-          const currentY = Math.floor(bunnyRef.current.y)
+          const currentX = Math.floor(bunnyRef.current.x)
+          
           const equalZeroSprite = bunnyRef.current.children
             .filter((child: any) => !finishNotes.current.includes(child))
-            .filter((child: any) => Math.floor(child.y + currentY) < playingLineRef.current.y)
+            .filter((child: any) => Math.floor(child.x + currentX) < 0)
           if (equalZeroSprite.length > 0) {
             finishNotes.current = finishNotes.current.concat(equalZeroSprite)
             equalZeroSprite.forEach((sprite: any) => {playAudioByNoteText(sprite.alt)})
@@ -126,45 +122,69 @@ export default (props: any) => {
           media_recorder.current.stop()
         }
       })
+    
+
+    
+    // recordEvent()
+
     }
   }, [notes])
-  
-  function playMusicEvent () {
-    if (chosen.length === 0) return
-    const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => {
-      const _newNotes = track.notes.map((note: any) => ({ ...note, name: note.name, time: note.time }))
-      return _newNotes
-    })
-
-    if (_notes.length === 0) return
-    const _noteList = _notes.slice(0, 550)
-    setNotes(_noteList)
-  }
 
   useEffect(() => {
-    readMidiFile(musicMidi)
-  }, [])
+    console.log({ chosen })
 
-  const heightLength: number = Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).length
+  }, [chosen])
+
+  function chosenNewTrack (index: number) {
+    if (chosen.includes(index)) {
+      setChosen((prev: number[]) => prev.filter((preidx: number) => preidx !== index))
+    } else {
+      setChosen((prev: number[]) => prev.concat(index))
+    }
+  }
+
+  function chosenMusicEvent (name: string) {
+    if (musicMidi === name) {
+      setMusicMidi('')
+    } else {
+      setMusicMidi(name)
+      readMidiFile(name)
+    }
+  }
+
+  function getToMusic () {
+    router(`/music/${musicMidi}/${chosen.join()}`)
+  }
+
+  // const filterdNotes: string[] = noteList
+  //   .filter((noteName: string) => true || noteNameGroup.hasOwnProperty(noteName))
+  // console.log({ noteNameGroup, noteList })
 
   return <>
-  <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WEIGHT, background: '#aaa' }} onClick={playMusicEvent}>
+  MUSIC LIST
+  {/* <div>{ noteTimes.map((time: number) => <div>{time}</div>) }</div> */}
 
-
-    <Sprite ref={playingLineRef} width={heightLength * NOTE_SIZE} height={1} texture={Texture.WHITE} tint="0x000000" x={0} y={CANVAS_HEIGHT * .75} zIndex={1000} />
-    <Container ref={bunnyRef}>
-      {
-        ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(([key, notes]: any, notesIndex: number): any => {
-          return notes.map((note: any, noteIndex: number) => {
-            return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(notesIndex) * NOTE_SIZE} y={note.time * 60} zIndex={noteIndex}>  
-              {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
-            </Sprite>
-          })
-          // return <Sprite key={key + notesIndex} width={20} height={20} texture={Texture.WHITE} tint="0x000000" x={0} y={notesIndex * 20} zIndex={notesIndex} />  
-        })
-      }
-    </Container>
-  </Stage>
-  </>
+  <div className="mt-3 flex items-center">
+    {
+      musics.map((music: string, index: number) => <div onClick={() => { chosenMusicEvent(music) }} className={`${musicMidi === music ? 'bg-red-800 text-white': 'border'} px-1 rounded mx-1 cursor-pointer `} key={music + '-' + index}>{ music }</div>)
+    }
+  </div>
   
+  {
+    !!musicMidi &&
+      <div className="mt-3 flex items-center">
+        {
+          midiTracks.map((track: any, index: number) => <div onClick={() => { chosenNewTrack(index) }} className={`${chosen.includes(index) ? 'bg-red-800 text-white': 'border'} px-1 rounded mx-1 cursor-pointer `} key={track.name + '-' + index}>{ track.name || 'unknown' }</div>)
+        }
+      </div>
+  }
+
+
+  {/* <div>{ noteList.length }</div> */}
+
+  <div onClick={getToMusic} className={`cursor-pointer ${chosen.length > 0 ? 'bg-blue-600 text-white':' border'} inline-block rounded px-6 py-2 text-2xl mt-8 ml-8`}>
+    GO
+  </div>
+
+  </>
 }

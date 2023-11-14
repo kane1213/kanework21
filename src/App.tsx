@@ -1,6 +1,6 @@
 import './App.scss'
-import { BrowserRouter as Router, useNavigate } from 'react-router-dom'
-import { Suspense } from 'react'
+import { BrowserRouter as Router, useLocation, useNavigate } from 'react-router-dom'
+import { Suspense, useMemo } from 'react'
 import BaseRouter, { paths } from '@/router'
 
 export default () => <Router>
@@ -13,12 +13,16 @@ export default () => <Router>
 
 function AppRoutes() {
   const router = useNavigate()
+  const location = useLocation()
   function routerTo(name: string) {
     router(`/${name.toLowerCase()}`)
   }
+  const showHeader = useMemo<boolean>(() => {
+    return !(location.pathname.includes('music') && location.pathname.split('/').length > 2)
+  }, [location])
 
   return <>
-    <div className="nav-btns">
+    {showHeader && <div className="nav-btns">
       {
         ['/home'].concat(paths
           .filter((path: string) => path !== '/' && path !== '*'))
@@ -28,7 +32,7 @@ function AppRoutes() {
           })
       }
       
-    </div>
+    </div>}
     <BaseRouter />
     
   </>

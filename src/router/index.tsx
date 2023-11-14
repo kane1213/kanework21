@@ -23,7 +23,8 @@ const routes = [
   { path: '/scroll', key: 'scroll', ele: lazy(() => import('@/pages/Scroll')), children: [] },
   { path: '/tabs', key: 'tabs', ele: lazy(() => import('@/pages/Tabs')), children: [] },
 
-  { path: '/music', key: 'music', ele: lazy(() => import('@/pages/Music')), children: [] },
+  { path: '/music', key: 'music', ele: lazy(() => import('@/pages/Music/list')), children: [] },
+  { path: '/music/:name/:chosens', key: 'music', ele: lazy(() => import('@/pages/Music')), children: [] },
 
   { path: '/miss', key: 'miss', ele: lazy(() => import('@/pages/Miss')), children: [] },
 
