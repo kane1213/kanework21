@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
-import { Sprite, Stage, Container, Text } from "react-pixi-fiber";
+import { Sprite, Stage, Container, Graphics } from "react-pixi-fiber";
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
 import gsap from "gsap";
@@ -114,7 +114,7 @@ export default (props: any) => {
           const currentY = Math.floor(bunnyRef.current.y)
           const equalZeroSprite = bunnyRef.current.children
             .filter((child: any) => !finishNotes.current.includes(child))
-            .filter((child: any) => Math.floor(child.y + currentY) < playingLineRef.current.y)
+            .filter((child: any) => Math.floor(child.y + currentY) < CANVAS_HEIGHT * .5)
           if (equalZeroSprite.length > 0) {
             finishNotes.current = finishNotes.current.concat(equalZeroSprite)
             equalZeroSprite.forEach((sprite: any) => {playAudioByNoteText(sprite.alt)})
@@ -148,10 +148,18 @@ export default (props: any) => {
   const heightLength: number = Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).length
 
   return <>
-  <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WEIGHT, background: '#aaa' }} onClick={playMusicEvent}>
+  <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WEIGHT, background: '#f7ffd6' }} onClick={playMusicEvent}>
 
-
-    <Sprite ref={playingLineRef} width={heightLength * NOTE_SIZE} height={1} texture={Texture.WHITE} tint="0x000000" x={0} y={CANVAS_HEIGHT * .75} zIndex={1000} />
+    <Graphics>
+      <Rect 
+          fill={{ color: 0xDE3249 }} 
+          x={50} 
+          y={50} 
+          width={100} 
+          height={100} 
+      />
+    </Graphics>
+    {/* <Sprite ref={playingLineRef} width={heightLength * NOTE_SIZE} height={1} texture={Texture.WHITE} tint="0x000000" x={0} y={CANVAS_HEIGHT * .75} zIndex={1000} /> */}
     <Container ref={bunnyRef}>
       {
         ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(([key, notes]: any, notesIndex: number): any => {
