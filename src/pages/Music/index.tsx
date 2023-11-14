@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
-import { Sprite, Stage, Container, Graphics } from "react-pixi-fiber";
+import { Sprite, Stage, Container } from "react-pixi-fiber";
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
 import gsap from "gsap";
@@ -7,6 +7,7 @@ import _ from 'lodash'
 import { Texture } from "pixi.js";
 import { useNavigate, useLocation } from "react-router-dom";
 import noteBall from '/public/images/musicbox/noteball.png';
+import kone from '/public/images/musicbox/key1.png';
 
 interface NoteData {
   midi: number,
@@ -58,7 +59,8 @@ export default (props: any) => {
 
   const stageRef = createRef<any>();
   const bunnyRef = createRef<any>();
-  const playingLineRef = createRef<any>();
+  // const playingLineRef = createRef<any>();
+  const maskRef = createRef<any>();
   const media_recorder = useRef<any>();
   const finishNotes = useRef<any>([]);
 
@@ -101,7 +103,8 @@ export default (props: any) => {
 
   useEffect(() => {
     if (notes.length > 0) {
-      bunnyRef.current.y = CANVAS_HEIGHT
+      bunnyRef.current.y = CANVAS_HEIGHT * .5 + 5
+      bunnyRef.current.mask = maskRef.current;
       gsap.to(bunnyRef.current, {
         y: -bunnyRef.current.height,
         duration: bunnyRef.current.height * .025,
@@ -117,7 +120,9 @@ export default (props: any) => {
             .filter((child: any) => Math.floor(child.y + currentY) < CANVAS_HEIGHT * .5)
           if (equalZeroSprite.length > 0) {
             finishNotes.current = finishNotes.current.concat(equalZeroSprite)
-            equalZeroSprite.forEach((sprite: any) => {playAudioByNoteText(sprite.alt)})
+            equalZeroSprite.forEach((sprite: any) => {{
+              playAudioByNoteText(sprite.alt);
+            }})
           }
         },
         onComplete() {
@@ -128,6 +133,7 @@ export default (props: any) => {
       })
     }
   }, [notes])
+
   
   function playMusicEvent () {
     if (chosen.length === 0) return
@@ -150,16 +156,10 @@ export default (props: any) => {
   return <>
   <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WEIGHT, background: '#f7ffd6' }} onClick={playMusicEvent}>
 
-    <Graphics>
-      <Rect 
-          fill={{ color: 0xDE3249 }} 
-          x={50} 
-          y={50} 
-          width={100} 
-          height={100} 
-      />
-    </Graphics>
-    {/* <Sprite ref={playingLineRef} width={heightLength * NOTE_SIZE} height={1} texture={Texture.WHITE} tint="0x000000" x={0} y={CANVAS_HEIGHT * .75} zIndex={1000} /> */}
+    
+    {/* <Sprite ref={playingLineRef} width={heightLength * NOTE_SIZE} height={1} texture={Texture.WHITE} tint="0x000000" x={0} y={CANVAS_HEIGHT * .5} zIndex={1000} /> */}
+
+    <Sprite ref={maskRef} width={CANVAS_WEIGHT} height={CANVAS_HEIGHT * .5} texture={Texture.WHITE} tint="0xf7ffd6" x={0} y={0} zIndex={1000} />
     <Container ref={bunnyRef}>
       {
         ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(([key, notes]: any, notesIndex: number): any => {
@@ -172,6 +172,13 @@ export default (props: any) => {
         })
       }
     </Container>
+
+    {
+      ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(((_: any, index: number) => 
+
+        <Sprite texture={Texture.from(kone)} width={15} height={130} y={CANVAS_HEIGHT * .5} x={index * 16} />
+      ))
+    }
   </Stage>
   </>
   
