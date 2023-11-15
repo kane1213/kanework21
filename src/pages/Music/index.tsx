@@ -1,12 +1,12 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
 import { Sprite, Stage, Container, TilingSprite } from "react-pixi-fiber";
-// import { AnimatedSprite } from 'pixi'
+import AnimatedSprite from '@/components/AnimationSprite';
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
 import gsap from "gsap";
 import _ from 'lodash'
-import { Texture, AnimatedSprite } from "pixi.js";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Texture } from "pixi.js";
+import { useLocation } from "react-router-dom";
 import noteBall from '/public/images/musicbox/noteball.png';
 import kone from '/public/images/musicbox/key1.png';
 import ktwo from '/public/images/musicbox/key2.png';
@@ -21,14 +21,10 @@ interface NoteData {
   duration: number
 }
 
-const KeySprite = new AnimatedSprite([
-  Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),
-  Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),
-]); 
-
 export default (props: any) => {
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
+  const TOTAL_NOTES: number = 64
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
   const [chosen, setChosen] = useState<number[]>(chosens.split(',').map((val: string) => parseInt(val)) || [])
@@ -69,6 +65,7 @@ export default (props: any) => {
 
   const stageRef = createRef<any>();
   const bunnyRef = createRef<any>();
+  const aniContainer = useRef<any>({});
   // const playingLineRef = createRef<any>();
   const maskRef = createRef<any>();
   const media_recorder = useRef<any>();
@@ -76,6 +73,8 @@ export default (props: any) => {
 
   function playAudioByNoteText (text: string) {
     playAudio(audioData[text], 0, 1.5)
+
+    aniContainer.current[text]()
   }
 
   function playAudio(base64Data: any, time: number, duration: number) {
@@ -159,15 +158,19 @@ export default (props: any) => {
 
   useEffect(() => {
     readMidiFile(musicMidi)
-    
-    // stageRef.current._app.current.stage.addChild(KeySprite)
-    // KeySprite.gotoAndPlay(0)
-    // KeySprite.play()
-    // KeySprite.play()
   }, [])
 
   const widthLength: number = Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).length
+  // const noteKeys = [...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(((note: any, index: number) => 
+  //   {
+  //     return <AnimatedSprite getPlay={(play: any) => {
+  //       // console.log(play)
+  //       aniContainer.current = { ...aniContainer.current, [note[0]]: play }
+  //       console.log(aniContainer)
+  //     }} key={note[0]} speed={50} texture={[kone, ktwo]}  width={15} height={130} x={index * 16} />
 
+  //   }
+  // ))]
   return <>
   <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} onClick={playMusicEvent}>
 
@@ -190,7 +193,7 @@ export default (props: any) => {
     </Container>
 
     {/* <Sprite ref={maskRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT * .5} texture={Texture.WHITE} tint="0x000000" x={0} /> */}
-    <Container ref={bunnyRef} x={(CANVAS_WIDTH - widthLength * 16) * .5}>
+    <Container ref={bunnyRef} x={141 + ((TOTAL_NOTES - widthLength) / 2) * NOTE_SIZE}>
       {
         ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(( [key, notes]: any, notesIndex: number): any => {
           return notes.map((note: any, noteIndex: number) => {
@@ -202,13 +205,27 @@ export default (props: any) => {
         })
       }
     </Container>
-    <Container x={(CANVAS_WIDTH - widthLength * 16) * .5} y={CANVAS_HEIGHT * .5 - 5}>
+    <Container x={141} y={CANVAS_HEIGHT * .5 - 5}>
       {
-        ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(((_: any, index: number) => 
-          <Sprite texture={Texture.from(kone)} width={15} height={130} x={index * 16} />
-        ))
+        widthLength > 0 && new Array(Math.floor((TOTAL_NOTES - widthLength) / 2)).fill('').map((_, idx: number) => {
+          return <Sprite texture={Texture.from(kone)} width={15} height={130} x={idx * NOTE_SIZE + 8} />  
+        })
       }
+      
 
+      { ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(((note: any, index: number) => 
+        {
+          return <AnimatedSprite getPlay={(play: any) => {
+            aniContainer.current = { ...aniContainer.current, [note[0]]: play }
+          }} key={note[0]} speed={90} texture={[kone, ktwo]}  width={15} height={130} x={Math.floor(((TOTAL_NOTES - widthLength) / 2) * NOTE_SIZE) + index * NOTE_SIZE} />
+
+        }
+      )) }
+      {
+        widthLength > 0 && new Array(Math.floor((TOTAL_NOTES - widthLength) / 2 - 1)).fill('').map((_, idx: number) => {
+          return <Sprite texture={Texture.from(kone)} width={15} height={130} x={700 + idx * NOTE_SIZE} />  
+        })
+      }
     </Container>
     
   </Stage>
