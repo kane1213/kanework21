@@ -1,13 +1,15 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
 import { Sprite, Stage, Container, TilingSprite } from "react-pixi-fiber";
+// import { AnimatedSprite } from 'pixi'
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
 import gsap from "gsap";
 import _ from 'lodash'
-import { Texture } from "pixi.js";
+import { Texture, AnimatedSprite } from "pixi.js";
 import { useNavigate, useLocation } from "react-router-dom";
 import noteBall from '/public/images/musicbox/noteball.png';
 import kone from '/public/images/musicbox/key1.png';
+import ktwo from '/public/images/musicbox/key2.png';
 import gear from '/public/images/musicbox/gear.png';
 import wheel from '/public/images/musicbox/wheel.png';
 import wood from '/public/images/musicbox/musicBoxWood.png';
@@ -18,6 +20,11 @@ interface NoteData {
   time: number,
   duration: number
 }
+
+const KeySprite = new AnimatedSprite([
+  Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),Texture.from(kone),
+  Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),Texture.from(ktwo),
+]); 
 
 export default (props: any) => {
   const CANVAS_WIDTH: number = 1280
@@ -152,6 +159,11 @@ export default (props: any) => {
 
   useEffect(() => {
     readMidiFile(musicMidi)
+    
+    // stageRef.current._app.current.stage.addChild(KeySprite)
+    // KeySprite.gotoAndPlay(0)
+    // KeySprite.play()
+    // KeySprite.play()
   }, [])
 
   const widthLength: number = Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).length
@@ -173,6 +185,7 @@ export default (props: any) => {
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={124} y={403} />
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={604} y={403} />
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={1074} y={403} />
+      
       
     </Container>
 
