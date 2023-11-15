@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
-import { Sprite, Stage, Container } from "react-pixi-fiber";
+import { Sprite, Stage, Container, TilingSprite } from "react-pixi-fiber";
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
 import gsap from "gsap";
@@ -8,7 +8,10 @@ import { Texture } from "pixi.js";
 import { useNavigate, useLocation } from "react-router-dom";
 import noteBall from '/public/images/musicbox/noteball.png';
 import kone from '/public/images/musicbox/key1.png';
-
+import gear from '/public/images/musicbox/gear.png';
+import wheel from '/public/images/musicbox/wheel.png';
+import wood from '/public/images/musicbox/musicBoxWood.png';
+import metal from '/public/images/musicbox/metal.png';
 interface NoteData {
   midi: number,
   name: string,
@@ -17,7 +20,7 @@ interface NoteData {
 }
 
 export default (props: any) => {
-  const CANVAS_WEIGHT: number = 1280
+  const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -151,18 +154,32 @@ export default (props: any) => {
     readMidiFile(musicMidi)
   }, [])
 
-  const heightLength: number = Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).length
+  const widthLength: number = Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).length
 
   return <>
-  <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WEIGHT, background: '#f7ffd6' }} onClick={playMusicEvent}>
+  <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} onClick={playMusicEvent}>
 
     
     {/* <Sprite ref={playingLineRef} width={heightLength * NOTE_SIZE} height={1} texture={Texture.WHITE} tint="0x000000" x={0} y={CANVAS_HEIGHT * .5} zIndex={1000} /> */}
 
-    <Sprite ref={maskRef} width={CANVAS_WEIGHT} height={CANVAS_HEIGHT * .5} texture={Texture.WHITE} tint="0xf7ffd6" x={0} y={0} zIndex={1000} />
-    <Container ref={bunnyRef}>
+    <Container x={(CANVAS_WIDTH - 1240) * .5} y={(CANVAS_HEIGHT - 548) * .5}>
+      <Sprite width={1240} height={548} texture={Texture.from(wood)} x={0} y={0} />
+      <Sprite ref={maskRef} width={1000} height={261} texture={Texture.WHITE} x={121}  y={8} tint="0x000000" />
+      <TilingSprite texture={Texture.from(wheel)} width={130} height={315} y={-15} x={-9} />
+      <TilingSprite texture={Texture.from(metal)} width={1000} height={260} y={9} x={121} />
+      <TilingSprite texture={Texture.from(wheel)} width={130} height={315} y={-15} x={1119} />
+      <Sprite texture={Texture.WHITE} tint="0x5e5e5e" width={998} height={50} x={121} y={399} />
+
+      <Sprite texture={Texture.from(gear)} width={41} height={41}  x={124} y={403} />
+      <Sprite texture={Texture.from(gear)} width={41} height={41}  x={604} y={403} />
+      <Sprite texture={Texture.from(gear)} width={41} height={41}  x={1074} y={403} />
+      
+    </Container>
+
+    {/* <Sprite ref={maskRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT * .5} texture={Texture.WHITE} tint="0x000000" x={0} /> */}
+    <Container ref={bunnyRef} x={(CANVAS_WIDTH - widthLength * 16) * .5}>
       {
-        ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(([key, notes]: any, notesIndex: number): any => {
+        ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(( [key, notes]: any, notesIndex: number): any => {
           return notes.map((note: any, noteIndex: number) => {
             return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(notesIndex) * NOTE_SIZE} y={note.time * 60} zIndex={noteIndex}>  
               {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
@@ -172,13 +189,15 @@ export default (props: any) => {
         })
       }
     </Container>
+    <Container x={(CANVAS_WIDTH - widthLength * 16) * .5} y={CANVAS_HEIGHT * .5 - 5}>
+      {
+        ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(((_: any, index: number) => 
+          <Sprite texture={Texture.from(kone)} width={15} height={130} x={index * 16} />
+        ))
+      }
 
-    {
-      ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(((_: any, index: number) => 
-
-        <Sprite texture={Texture.from(kone)} width={15} height={130} y={CANVAS_HEIGHT * .5} x={index * 16} />
-      ))
-    }
+    </Container>
+    
   </Stage>
   </>
   
