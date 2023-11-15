@@ -35,9 +35,9 @@ export default (props: any) => {
   // const [audios, setAudios] = useState<HTMLAudioElement[]>()
 
   // const noteTimes = useMemo(() => notes.length > 0 ? _.uniq(_.map(notes, 'time')) : [], [notes])
-  const defaultKeys = ['C', 'Cb', 'C#', 'D', 'Db', 'D#', 'E', 'F', 'Fb', 'F#', 'G', 'Gb', 'G#', 'A', 'Ab', 'A#', 'B']
+  const defaultKeys = ['C', 'Cb', 'C#', 'D', 'Db', 'D#', 'E', 'F', 'Fb', 'F#', 'G', 'Gb', 'G#', 'A', 'Ab', 'A#', 'B'].filter((k: string) => !k.includes('b'))
   const keyboards = {
-    0: defaultKeys.slice(-2),
+    0: ['A', 'B'],
     1: defaultKeys.slice(),
     2: defaultKeys.slice(),
     3: defaultKeys.slice(),
@@ -45,9 +45,13 @@ export default (props: any) => {
     5: defaultKeys.slice(),
     6: defaultKeys.slice(),
     7: defaultKeys.slice(),
-    8: defaultKeys.slice(0, 1),
+    8: ['C', 'D'],
   }
 
+  const kNotes: string[] = Object.entries(keyboards).reduce((sum: any, kbs: any) => sum.concat(kbs[1].map((k: string) => k + kbs[0])) , [])
+  
+
+  
   const noteNameGroup = useMemo(() => {
     if (notes.length === 0) return {}
     const groupNotes = _.groupBy(notes, 'name')
@@ -61,7 +65,7 @@ export default (props: any) => {
     }, {})
   }, [notes])
 
-  const NOTE_SIZE: number = 16
+  const NOTE_SIZE: number = (CANVAS_WIDTH - 281) / kNotes.length - 1
 
   const stageRef = createRef<any>();
   const bunnyRef = createRef<any>();
@@ -160,22 +164,8 @@ export default (props: any) => {
     readMidiFile(musicMidi)
   }, [])
 
-  const widthLength: number = Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).length
-  // const noteKeys = [...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(((note: any, index: number) => 
-  //   {
-  //     return <AnimatedSprite getPlay={(play: any) => {
-  //       // console.log(play)
-  //       aniContainer.current = { ...aniContainer.current, [note[0]]: play }
-  //       console.log(aniContainer)
-  //     }} key={note[0]} speed={50} texture={[kone, ktwo]}  width={15} height={130} x={index * 16} />
-
-  //   }
-  // ))]
-  return <>
+  return <div className="cursor-none">
   <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} onClick={playMusicEvent}>
-
-    
-    {/* <Sprite ref={playingLineRef} width={heightLength * NOTE_SIZE} height={1} texture={Texture.WHITE} tint="0x000000" x={0} y={CANVAS_HEIGHT * .5} zIndex={1000} /> */}
 
     <Container x={(CANVAS_WIDTH - 1240) * .5} y={(CANVAS_HEIGHT - 548) * .5}>
       <Sprite width={1240} height={548} texture={Texture.from(wood)} x={0} y={0} />
@@ -193,11 +183,11 @@ export default (props: any) => {
     </Container>
 
     {/* <Sprite ref={maskRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT * .5} texture={Texture.WHITE} tint="0x000000" x={0} /> */}
-    <Container ref={bunnyRef} x={141 + ((TOTAL_NOTES - widthLength) / 2) * NOTE_SIZE}>
+    <Container ref={bunnyRef} x={141}>
       {
         ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(( [key, notes]: any, notesIndex: number): any => {
           return notes.map((note: any, noteIndex: number) => {
-            return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(notesIndex) * NOTE_SIZE} y={note.time * 60} zIndex={noteIndex}>  
+            return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(kNotes.indexOf(key) * (NOTE_SIZE + 1))} y={note.time * 60} zIndex={noteIndex}>  
               {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
             </Sprite>
           })
@@ -206,29 +196,27 @@ export default (props: any) => {
       }
     </Container>
     <Container x={141} y={CANVAS_HEIGHT * .5 - 5}>
-      {
-        widthLength > 0 && new Array(Math.floor((TOTAL_NOTES - widthLength) / 2)).fill('').map((_, idx: number) => {
-          return <Sprite texture={Texture.from(kone)} width={15} height={130} x={idx * NOTE_SIZE + 8} />  
-        })
-      }
       
-
-      { ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(((note: any, index: number) => 
+      {/* { ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(((note: any, index: number) => 
         {
           return <AnimatedSprite getPlay={(play: any) => {
             aniContainer.current = { ...aniContainer.current, [note[0]]: play }
           }} key={note[0]} speed={90} texture={[kone, ktwo]}  width={15} height={130} x={Math.floor(((TOTAL_NOTES - widthLength) / 2) * NOTE_SIZE) + index * NOTE_SIZE} />
 
         }
-      )) }
+      )) } */}
+
       {
-        widthLength > 0 && new Array(Math.floor((TOTAL_NOTES - widthLength) / 2 - 1)).fill('').map((_, idx: number) => {
-          return <Sprite texture={Texture.from(kone)} width={15} height={130} x={700 + idx * NOTE_SIZE} />  
-        })
+        kNotes.map((key: string, kIndex: number) => <AnimatedSprite getPlay={(play: any) => {
+          aniContainer.current = { ...aniContainer.current, [key]: play }
+        }} key={key} speed={90} texture={[kone, ktwo]}  width={NOTE_SIZE} height={130} x={ kIndex * (NOTE_SIZE + 1)} />)
+
       }
+
+      
     </Container>
     
   </Stage>
-  </>
+  </div>
   
 }
