@@ -68,7 +68,7 @@ export default (props: any) => {
   const NOTE_SIZE: number = (CANVAS_WIDTH - 281) / kNotes.length - 1
 
   const stageRef = createRef<any>();
-  const bunnyRef = createRef<any>();
+  const notesRef = createRef<any>();
   const aniContainer = useRef<any>({});
   // const playingLineRef = createRef<any>();
   const maskRef = createRef<any>();
@@ -76,24 +76,32 @@ export default (props: any) => {
   const finishNotes = useRef<any>([]);
 
   function playAudioByNoteText (text: string) {
-    playAudio(audioData[text], 0, 1.5)
+    playAudio(text, 0, 1.5)
 
     aniContainer.current[text]()
   }
 
-  function playAudio(base64Data: any, time: number, duration: number) {
+  function playAudio(text: string, time: number, duration: number) {
+    const base64Data = audioData[text]
     var audio = audioContext.createBufferSource();
-    // 解碼音樂 base64 字串
-    audioContext.decodeAudioData(base64ToArrayBuffer(base64Data), function (buffer) {
-        // 設置 Audio 元素的音訊緩衝
-        audio.buffer = buffer;
-        // 連接 Audio 元素到音訊輸出
-        audio.connect(audioContext.destination);
-        // 播放音樂
-        audio.start();
-    });
-    // const audio = new Audio(base64Data)
-    // audio.play()
+
+    try {
+      // 解碼音樂 base64 字串
+      audioContext.decodeAudioData(base64ToArrayBuffer(base64Data), function (buffer) {
+          // 設置 Audio 元素的音訊緩衝
+          audio.buffer = buffer;
+          // 連接 Audio 元素到音訊輸出
+          audio.connect(audioContext.destination);
+          // 播放音樂
+          audio.start();
+      });
+      // const audio = new Audio(base64Data)
+      // audio.play()
+      
+    } catch (error) {
+      console.log({ text, error})
+    }
+
   }
   
   function base64ToArrayBuffer(base64: string) {
@@ -116,19 +124,19 @@ export default (props: any) => {
 
   useEffect(() => {
     if (notes.length > 0) {
-      bunnyRef.current.y = CANVAS_HEIGHT * .5 + 5
-      bunnyRef.current.mask = maskRef.current;
-      gsap.to(bunnyRef.current, {
-        y: -bunnyRef.current.height,
-        duration: bunnyRef.current.height * .025,
+      notesRef.current.y = CANVAS_HEIGHT * .5 + 5
+      notesRef.current.mask = maskRef.current;
+      gsap.to(notesRef.current, {
+        y: -notesRef.current.height,
+        duration: notesRef.current.height * .00625,
         ease: "none",
         // delay: 0.5,
         onStart() {
-          // console.log(bunnyRef.current.children)
+          // console.log(notesRef.current.children)
         },
         onUpdate() {
-          const currentY = Math.floor(bunnyRef.current.y)
-          const equalZeroSprite = bunnyRef.current.children
+          const currentY = Math.floor(notesRef.current.y)
+          const equalZeroSprite = notesRef.current.children
             .filter((child: any) => !finishNotes.current.includes(child))
             .filter((child: any) => Math.floor(child.y + currentY) < CANVAS_HEIGHT * .5)
           if (equalZeroSprite.length > 0) {
@@ -140,8 +148,7 @@ export default (props: any) => {
         },
         onComplete() {
           console.log('done')
-          console.log(media_recorder.current)
-          media_recorder.current.stop()
+          console.log({ height: notesRef.current.height, y: notesRef.current.y })
         }
       })
     }
@@ -183,11 +190,11 @@ export default (props: any) => {
     </Container>
 
     {/* <Sprite ref={maskRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT * .5} texture={Texture.WHITE} tint="0x000000" x={0} /> */}
-    <Container ref={bunnyRef} x={141}>
+    <Container ref={notesRef} x={141}>
       {
         ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(( [key, notes]: any, notesIndex: number): any => {
           return notes.map((note: any, noteIndex: number) => {
-            return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(kNotes.indexOf(key) * (NOTE_SIZE + 1))} y={note.time * 60} zIndex={noteIndex}>  
+            return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(kNotes.indexOf(key) * (NOTE_SIZE + 1))} y={note.time * 120} zIndex={noteIndex}>  
               {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
             </Sprite>
           })
