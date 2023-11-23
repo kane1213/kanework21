@@ -24,7 +24,9 @@ interface NoteData {
 export default (props: any) => {
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
+  const NOTE_GAP: number = 150
   const TOTAL_NOTES: number = 64
+  const DURATION: number = .1 / 10
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
   const [chosen, setChosen] = useState<number[]>(chosens.split(',').map((val: string) => parseInt(val)) || [])
@@ -128,7 +130,7 @@ export default (props: any) => {
       notesRef.current.mask = maskRef.current;
       gsap.to(notesRef.current, {
         y: -notesRef.current.height,
-        duration: notesRef.current.height * .00625,
+        duration: notesRef.current.height * DURATION,
         ease: "none",
         // delay: 0.5,
         onStart() {
@@ -163,7 +165,7 @@ export default (props: any) => {
     })
 
     if (_notes.length === 0) return
-    const _noteList = _notes.slice(0, 550)
+    const _noteList = _notes.slice()
     setNotes(_noteList)
   }
 
@@ -194,7 +196,7 @@ export default (props: any) => {
       {
         ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(( [key, notes]: any, notesIndex: number): any => {
           return notes.map((note: any, noteIndex: number) => {
-            return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(kNotes.indexOf(key) * (NOTE_SIZE + 1))} y={note.time * 120} zIndex={noteIndex}>  
+            return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(kNotes.indexOf(key) * (NOTE_SIZE + 1))} y={note.time * NOTE_GAP} zIndex={noteIndex}>  
               {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
             </Sprite>
           })
