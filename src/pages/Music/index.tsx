@@ -180,21 +180,43 @@ export default (props: any) => {
 
     const tl = gsap.timeline({
       onStart: function() {
-        gsap.set(handGearRef.current, { duration: 2, x: 160, y: 10, ease: "linear" })
+        gsap.set(handGearRef.current, { x: 160, y: 10, ease: "linear" });
       },
       repeat: -1
     })
-    const RATE: number = 1.1
-    const RATE2: number = 0.9
-    tl.from(handGearRef.current, { x: 160, y: 10, width: GEAR_WIDTH, height: GEAR_HEIGHT });
+    // 橢圓形參數
+    const centerX = 180; // 橢圓中心X座標
+    const centerY = 100; // 橢圓中心Y座標
+    const radiusX = 40;  // X軸半徑
+    const radiusY = 20;  // Y軸半徑
 
-    tl.to(handGearRef.current, { x: 200, y: 5, width: GEAR_WIDTH * RATE, height: GEAR_HEIGHT * RATE });
+    tl.to(handGearRef.current, {
+      duration: 2,
+      bezier: {
+        values: [
+          { x: centerX - radiusX, y: centerY },
+          { x: centerX, y: centerY + radiusY },
+          { x: centerX + radiusX, y: centerY },
+          { x: centerX, y: centerY - radiusY },
+          { x: centerX - radiusX, y: centerY }
+        ],
+        type: "soft"
+      }
+    });
 
-    tl.to(handGearRef.current , { x: 250, y: 10, width: GEAR_WIDTH, height: GEAR_HEIGHT });
 
-    tl.to(handGearRef.current, { x: 200, y: 15, width: GEAR_WIDTH * RATE2, height: GEAR_HEIGHT * RATE2 });
+    alert("GG")
+    // tl.from(handGearRef.current, { x: 160, y: 10 });
+
+    // // tl.to(handGearRef.current, { x: 200, y: 10 });
+
+    // tl.to(handGearRef.current , { x: 200, y: 9, duration: 2});
+
     
-    tl.to(handGearRef.current, { x: 160, y: 10, width: GEAR_WIDTH, height: GEAR_HEIGHT });
+
+    // // tl.to(handGearRef.current, { x: 200, y: 11 });
+    
+    // tl.to(handGearRef.current, { x: 160, y: 10, duration: 2 });
 
     // gsap.to(handGearRef.current, { duration: 2, x: 250, ease: "linear", repeat: -1 });
     // gsap.from(handGearRef.current, { duration: 2, x: 160, y: 10, ease: "linear", repeat: -1 });
@@ -207,7 +229,7 @@ export default (props: any) => {
   return <div className="cursor-none">
   <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} onClick={playMusicEvent}>
 
-    
+  <Sprite ref={handGearRef} width={GEAR_WIDTH} height={GEAR_HEIGHT} x={160} y={10} texture={Texture.from(handGear)} />
  
     <Container x={(CANVAS_WIDTH - 1240) * .5} y={(CANVAS_HEIGHT - 548) * .5}>
       <Sprite width={1240} height={548} texture={Texture.from(wood)} x={0} y={0} />
@@ -257,7 +279,7 @@ export default (props: any) => {
 
       
     </Container>
-    <Sprite ref={handGearRef} width={GEAR_WIDTH} height={GEAR_HEIGHT} x={160} y={10} texture={Texture.from(handGear)} />
+    
   </Stage>
   </div>
   
