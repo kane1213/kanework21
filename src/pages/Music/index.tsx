@@ -14,6 +14,7 @@ import gear from '/public/images/musicbox/gear.png';
 import wheel from '/public/images/musicbox/wheel.png';
 import wood from '/public/images/musicbox/musicBoxWood.png';
 import metal from '/public/images/musicbox/metal.png';
+import handGear from '/public/images/musicbox/handGear.png'
 interface NoteData {
   midi: number,
   name: string,
@@ -27,6 +28,10 @@ export default (props: any) => {
   const NOTE_GAP: number = 150
   const TOTAL_NOTES: number = 64
   const DURATION: number = .1 / 10
+
+  const GEAR_HEIGHT: number = 96
+  const GEAR_WIDTH: number = 39
+
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
   const [chosen, setChosen] = useState<number[]>(chosens.split(',').map((val: string) => parseInt(val)) || [])
@@ -71,6 +76,7 @@ export default (props: any) => {
 
   const stageRef = createRef<any>();
   const notesRef = createRef<any>();
+  const handGearRef = createRef<any>()
   const aniContainer = useRef<any>({});
   // const playingLineRef = createRef<any>();
   const maskRef = createRef<any>();
@@ -171,11 +177,38 @@ export default (props: any) => {
 
   useEffect(() => {
     readMidiFile(musicMidi)
+
+    const tl = gsap.timeline({
+      onStart: function() {
+        gsap.set(handGearRef.current, { duration: 2, x: 160, y: 10, ease: "linear" })
+      },
+      repeat: -1
+    })
+    const RATE: number = 1.1
+    const RATE2: number = 0.9
+    tl.from(handGearRef.current, { x: 160, y: 10, width: GEAR_WIDTH, height: GEAR_HEIGHT });
+
+    tl.to(handGearRef.current, { x: 200, y: 5, width: GEAR_WIDTH * RATE, height: GEAR_HEIGHT * RATE });
+
+    tl.to(handGearRef.current , { x: 250, y: 10, width: GEAR_WIDTH, height: GEAR_HEIGHT });
+
+    tl.to(handGearRef.current, { x: 200, y: 15, width: GEAR_WIDTH * RATE2, height: GEAR_HEIGHT * RATE2 });
+    
+    tl.to(handGearRef.current, { x: 160, y: 10, width: GEAR_WIDTH, height: GEAR_HEIGHT });
+
+    // gsap.to(handGearRef.current, { duration: 2, x: 250, ease: "linear", repeat: -1 });
+    // gsap.from(handGearRef.current, { duration: 2, x: 160, y: 10, ease: "linear", repeat: -1 });
+    // gsap.timeline (handGearRef.current, { duration: 2, x: 200, y: 5, ease: "linear", repeat: -1 });
+    // gsap.to(handGearRef.current, { duration: 2, x: 850, y: 10, ease: "linear", repeat: -1 });
+
+    
   }, [])
 
   return <div className="cursor-none">
   <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} onClick={playMusicEvent}>
 
+    
+ 
     <Container x={(CANVAS_WIDTH - 1240) * .5} y={(CANVAS_HEIGHT - 548) * .5}>
       <Sprite width={1240} height={548} texture={Texture.from(wood)} x={0} y={0} />
       <Sprite ref={maskRef} width={1000} height={261} texture={Texture.WHITE} x={121}  y={8} tint="0x000000" />
@@ -224,7 +257,7 @@ export default (props: any) => {
 
       
     </Container>
-    
+    <Sprite ref={handGearRef} width={GEAR_WIDTH} height={GEAR_HEIGHT} x={160} y={10} texture={Texture.from(handGear)} />
   </Stage>
   </div>
   
