@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
 import { Sprite, Stage, Container, TilingSprite } from "react-pixi-fiber";
+import PIXI from 'pixi.js'
 import AnimatedSprite from '@/components/AnimationSprite';
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
@@ -244,6 +245,7 @@ export default (props: any) => {
     gsap.to(wheelRefTwo.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
   }, [])
 
+
   return <div className="cursor-none">
   <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} onClick={playMusicEvent}>
 
@@ -255,6 +257,7 @@ export default (props: any) => {
       <TilingSprite ref={wheelRefOne} texture={Texture.from(wheel)} width={130} height={350} y={-15} x={-9} />
       <TilingSprite texture={Texture.from(metal)} width={1000} height={260} y={9} x={121} />
       <TilingSprite ref={wheelRefTwo} texture={Texture.from(wheel)} width={130} height={350} y={-15} x={1119} />
+
       <Sprite texture={Texture.WHITE} tint="0x5e5e5e" width={998} height={50} x={121} y={399} />
 
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={124} y={403} />
