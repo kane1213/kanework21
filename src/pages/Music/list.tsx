@@ -1,21 +1,14 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
-import { Sprite, Stage, Container, Text } from "react-pixi-fiber";
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
 import gsap from "gsap";
 import _ from 'lodash'
-import { Texture } from "pixi.js";
 import { useNavigate } from "react-router-dom";
-interface NoteData {
-  midi: number,
-  name: string,
-  time: number,
-  duration: number
-}
+
 
 export default () => {
   const router = useNavigate()
-  const musics: string[] = DATA_DIRECTORY
+  const musics: string[] = DATA_DIRECTORY.filter((name: string) => !name.includes('hide'))
   const [chosen, setChosen] = useState<number[]>([])
   const [midiTracks, setTracks] = useState<any>([])
   const [notes, setNotes] = useState<any>([])

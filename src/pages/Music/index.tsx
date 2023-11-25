@@ -240,8 +240,8 @@ export default (props: any) => {
     wheelRefOne.current.mask = wheelMaskRef.current
     wheelRefTwo.current.mask = wheelMaskRef.current
 
-    gsap.to(wheelRefOne.current, { y: -15, duration: 1, repeat: -1, ease: "linear" })
-    gsap.to(wheelRefTwo.current, { y: -15, duration: 1, repeat: -1, ease: "linear" })
+    gsap.to(wheelRefOne.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
+    gsap.to(wheelRefTwo.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
   }, [])
 
   return <div className="cursor-none">
@@ -252,9 +252,9 @@ export default (props: any) => {
     <Container x={(CANVAS_WIDTH - 1240) * .5} y={(CANVAS_HEIGHT - 548) * .5}>
       <Sprite width={1240} height={548} texture={Texture.from(wood)} x={0} y={0} />
       <Sprite ref={maskRef} width={1000} height={261} texture={Texture.WHITE} x={121}  y={8} tint="0x000000" />
-      <TilingSprite ref={wheelRefOne} texture={Texture.from(wheel)} width={130} height={350} y={-40} x={-9} />
+      <TilingSprite ref={wheelRefOne} texture={Texture.from(wheel)} width={130} height={350} y={-15} x={-9} />
       <TilingSprite texture={Texture.from(metal)} width={1000} height={260} y={9} x={121} />
-      <TilingSprite ref={wheelRefTwo} texture={Texture.from(wheel)} width={130} height={350} y={-40} x={1119} />
+      <TilingSprite ref={wheelRefTwo} texture={Texture.from(wheel)} width={130} height={350} y={-15} x={1119} />
       <Sprite texture={Texture.WHITE} tint="0x5e5e5e" width={998} height={50} x={121} y={399} />
 
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={124} y={403} />
