@@ -3,7 +3,9 @@ import { Sprite, Stage, Container, TilingSprite } from "react-pixi-fiber";
 import AnimatedSprite from '@/components/AnimationSprite';
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
+import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 import gsap from "gsap";
+gsap.registerPlugin(MotionPathPlugin);
 import _ from 'lodash'
 import { Texture } from "pixi.js";
 import { useLocation } from "react-router-dom";
@@ -80,7 +82,10 @@ export default (props: any) => {
   const aniContainer = useRef<any>({});
   // const playingLineRef = createRef<any>();
   const maskRef = createRef<any>();
-  const media_recorder = useRef<any>();
+  const wheelMaskRef = createRef<any>();
+  const wheelRefOne = createRef<any>();
+  const wheelRefTwo = createRef<any>();
+  // const media_recorder = useRef<any>();
   const finishNotes = useRef<any>([]);
 
   function playAudioByNoteText (text: string) {
@@ -178,34 +183,43 @@ export default (props: any) => {
   useEffect(() => {
     readMidiFile(musicMidi)
 
+    const centerX = 0; // 橢圓中心X座標
+    const centerY = 0; // 橢圓中心Y座標
+    const radiusX = 15;  // X軸半徑
+    const radiusY = 10;  // Y軸半徑
+
     const tl = gsap.timeline({
       onStart: function() {
-        gsap.set(handGearRef.current, { x: 160, y: 10, ease: "linear" });
+        gsap.set(handGearRef.current, { x: 160 + centerX - radiusX, y: 10 + centerY });
+      },
+      onComplete () {
+        
+      },
+      onUpdate: function() {
+        // console.log(handGearRef.current.style.left, handGearRef.current.style.top);
       },
       repeat: -1
     })
     // 橢圓形參數
-    const centerX = 180; // 橢圓中心X座標
-    const centerY = 100; // 橢圓中心Y座標
-    const radiusX = 40;  // X軸半徑
-    const radiusY = 20;  // Y軸半徑
+    
 
     tl.to(handGearRef.current, {
       duration: 2,
-      bezier: {
-        values: [
-          { x: centerX - radiusX, y: centerY },
-          { x: centerX, y: centerY + radiusY },
-          { x: centerX + radiusX, y: centerY },
-          { x: centerX, y: centerY - radiusY },
-          { x: centerX - radiusX, y: centerY }
+      ease: "linear",
+      motionPath: {
+        path: [
+          { x: 160 + centerX - radiusX, y: 10 + centerY },
+          { x: 160 + centerX, y: 10 + centerY + radiusY },
+          { x: 160 + centerX + radiusX, y: 10 + centerY },
+          { x: 160 + centerX, y: 10 + centerY - radiusY },
+          { x: 160 + centerX - radiusX, y: 10 + centerY }
         ],
         type: "soft"
       }
     });
 
 
-    alert("GG")
+    // 
     // tl.from(handGearRef.current, { x: 160, y: 10 });
 
     // // tl.to(handGearRef.current, { x: 200, y: 10 });
@@ -223,26 +237,31 @@ export default (props: any) => {
     // gsap.timeline (handGearRef.current, { duration: 2, x: 200, y: 5, ease: "linear", repeat: -1 });
     // gsap.to(handGearRef.current, { duration: 2, x: 850, y: 10, ease: "linear", repeat: -1 });
 
-    
+    wheelRefOne.current.mask = wheelMaskRef.current
+    wheelRefTwo.current.mask = wheelMaskRef.current
+
+    gsap.to(wheelRefOne.current, { y: -15, duration: 1, repeat: -1, ease: "linear" })
+    gsap.to(wheelRefTwo.current, { y: -15, duration: 1, repeat: -1, ease: "linear" })
   }, [])
 
   return <div className="cursor-none">
   <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} onClick={playMusicEvent}>
 
-  <Sprite ref={handGearRef} width={GEAR_WIDTH} height={GEAR_HEIGHT} x={160} y={10} texture={Texture.from(handGear)} />
+    <Sprite ref={handGearRef} width={GEAR_WIDTH} height={GEAR_HEIGHT} texture={Texture.from(handGear)} />
  
     <Container x={(CANVAS_WIDTH - 1240) * .5} y={(CANVAS_HEIGHT - 548) * .5}>
       <Sprite width={1240} height={548} texture={Texture.from(wood)} x={0} y={0} />
       <Sprite ref={maskRef} width={1000} height={261} texture={Texture.WHITE} x={121}  y={8} tint="0x000000" />
-      <TilingSprite texture={Texture.from(wheel)} width={130} height={315} y={-15} x={-9} />
+      <TilingSprite ref={wheelRefOne} texture={Texture.from(wheel)} width={130} height={350} y={-40} x={-9} />
       <TilingSprite texture={Texture.from(metal)} width={1000} height={260} y={9} x={121} />
-      <TilingSprite texture={Texture.from(wheel)} width={130} height={315} y={-15} x={1119} />
+      <TilingSprite ref={wheelRefTwo} texture={Texture.from(wheel)} width={130} height={350} y={-40} x={1119} />
       <Sprite texture={Texture.WHITE} tint="0x5e5e5e" width={998} height={50} x={121} y={399} />
 
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={124} y={403} />
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={604} y={403} />
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={1074} y={403} />
       
+      <Sprite ref={wheelMaskRef} width={1260} height={315} texture={Texture.WHITE} x={-9}  y={-15} tint="0x0000ff" />
       
     </Container>
 
