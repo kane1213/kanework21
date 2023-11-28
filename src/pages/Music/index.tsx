@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
 import { Sprite, Stage, Container, TilingSprite } from "react-pixi-fiber";
-import PIXI from 'pixi.js'
 import AnimatedSprite from '@/components/AnimationSprite';
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
@@ -15,9 +14,10 @@ import kone from '/public/images/musicbox/key1.png';
 import ktwo from '/public/images/musicbox/key2.png';
 import gear from '/public/images/musicbox/gear.png';
 import wheel from '/public/images/musicbox/wheel.png';
-import wood from '/public/images/musicbox/musicBoxWood.png';
+import wood from '/public/images/musicbox/musicBoxWood2.png';
 import metal from '/public/images/musicbox/metal.png';
 import handGear from '/public/images/musicbox/handGear.png'
+import pad from '/public/images/musicbox/pad.png'
 interface NoteData {
   midi: number,
   name: string,
@@ -28,9 +28,8 @@ interface NoteData {
 export default (props: any) => {
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
-  const NOTE_GAP: number = 150
-  const TOTAL_NOTES: number = 64
-  const DURATION: number = .1 / 10
+  const NOTE_GAP: number = 200
+  const DURATION: number = .1 / 12
 
   const GEAR_HEIGHT: number = 96
   const GEAR_WIDTH: number = 39
@@ -137,11 +136,12 @@ export default (props: any) => {
   }
 
   useEffect(() => {
+
     if (notes.length > 0) {
       notesRef.current.y = CANVAS_HEIGHT * .5 + 5
       notesRef.current.mask = maskRef.current;
       gsap.to(notesRef.current, {
-        y: -notesRef.current.height,
+        y: -notesRef.current.height * 1.5,
         duration: notesRef.current.height * DURATION,
         ease: "none",
         // delay: 0.5,
@@ -219,25 +219,6 @@ export default (props: any) => {
       }
     });
 
-
-    // 
-    // tl.from(handGearRef.current, { x: 160, y: 10 });
-
-    // // tl.to(handGearRef.current, { x: 200, y: 10 });
-
-    // tl.to(handGearRef.current , { x: 200, y: 9, duration: 2});
-
-    
-
-    // // tl.to(handGearRef.current, { x: 200, y: 11 });
-    
-    // tl.to(handGearRef.current, { x: 160, y: 10, duration: 2 });
-
-    // gsap.to(handGearRef.current, { duration: 2, x: 250, ease: "linear", repeat: -1 });
-    // gsap.from(handGearRef.current, { duration: 2, x: 160, y: 10, ease: "linear", repeat: -1 });
-    // gsap.timeline (handGearRef.current, { duration: 2, x: 200, y: 5, ease: "linear", repeat: -1 });
-    // gsap.to(handGearRef.current, { duration: 2, x: 850, y: 10, ease: "linear", repeat: -1 });
-
     wheelRefOne.current.mask = wheelMaskRef.current
     wheelRefTwo.current.mask = wheelMaskRef.current
 
@@ -252,13 +233,13 @@ export default (props: any) => {
     <Sprite ref={handGearRef} width={GEAR_WIDTH} height={GEAR_HEIGHT} texture={Texture.from(handGear)} />
  
     <Container x={(CANVAS_WIDTH - 1240) * .5} y={(CANVAS_HEIGHT - 548) * .5}>
-      <Sprite width={1240} height={548} texture={Texture.from(wood)} x={0} y={0} />
+      <Sprite width={1240} height={608} texture={Texture.from(wood)} x={0} y={0} />
       <Sprite ref={maskRef} width={1000} height={261} texture={Texture.WHITE} x={121}  y={8} tint="0x000000" />
       <TilingSprite ref={wheelRefOne} texture={Texture.from(wheel)} width={130} height={350} y={-15} x={-9} />
       <TilingSprite texture={Texture.from(metal)} width={1000} height={260} y={9} x={121} />
       <TilingSprite ref={wheelRefTwo} texture={Texture.from(wheel)} width={130} height={350} y={-15} x={1119} />
 
-      <Sprite texture={Texture.WHITE} tint="0x5e5e5e" width={998} height={50} x={121} y={399} />
+      <Sprite texture={Texture.from(pad)} width={998} height={93} x={121} y={362} />
 
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={124} y={403} />
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={604} y={403} />
@@ -282,15 +263,6 @@ export default (props: any) => {
       }
     </Container>
     <Container x={141} y={CANVAS_HEIGHT * .5 - 5}>
-      
-      {/* { ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(((note: any, index: number) => 
-        {
-          return <AnimatedSprite getPlay={(play: any) => {
-            aniContainer.current = { ...aniContainer.current, [note[0]]: play }
-          }} key={note[0]} speed={90} texture={[kone, ktwo]}  width={15} height={130} x={Math.floor(((TOTAL_NOTES - widthLength) / 2) * NOTE_SIZE) + index * NOTE_SIZE} />
-
-        }
-      )) } */}
 
       {
         kNotes.map((key: string, kIndex: number) => <AnimatedSprite getPlay={(play: any) => {
