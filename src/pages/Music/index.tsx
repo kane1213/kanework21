@@ -1,12 +1,12 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
-import { Sprite, Stage, Container, TilingSprite } from "react-pixi-fiber";
+import { Sprite, Stage, Container, TilingSprite, Text } from "react-pixi-fiber";
 import AnimatedSprite from '@/components/AnimationSprite';
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 import gsap from "gsap";
 gsap.registerPlugin(MotionPathPlugin);
-import _ from 'lodash'
+// import _ from 'lodash'
 import { Texture } from "pixi.js";
 import { useLocation } from "react-router-dom";
 import noteBall from '/public/images/musicbox/noteball.png';
@@ -20,6 +20,9 @@ import handGear from '/public/images/musicbox/handGear.png'
 import pad from '/public/images/musicbox/pad.png'
 
 export default (props: any) => {
+  const MUSICBOX_TITLE = 'SHENMUE 1'
+  const MUSICBOX_SUBTITLE = 'Main Theme'
+
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
   const NOTE_GAP: number = 160
@@ -87,6 +90,8 @@ export default (props: any) => {
   const wheelMaskRef = createRef<any>();
   const wheelRefOne = createRef<any>();
   const wheelRefTwo = createRef<any>();
+  const textTitleRef = createRef<any>();
+  const textSecTitleRef = createRef<any>();
   // const media_recorder = useRef<any>();
   const finishNotes = useRef<any>([]);
 
@@ -131,8 +136,11 @@ export default (props: any) => {
 
 
   async function readMidiFile(name: string) {
-    const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
-    // const { tracks } = await Midi.fromUrl(name)
+    // const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
+    const _name = name.includes('.mid')
+      ? name
+      : `/public/music/midi/${name}.mid`;
+    const { tracks } = await Midi.fromUrl(_name)
     const _tracks = tracks.filter((track: any) => track.notes.length > 0)
     setTracks(_tracks)
   }
@@ -226,6 +234,10 @@ export default (props: any) => {
 
     gsap.to(wheelRefOne.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
     gsap.to(wheelRefTwo.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
+
+
+    textTitleRef.current.x = (CANVAS_WIDTH - textTitleRef.current.width) * .5
+    textSecTitleRef.current.x = (CANVAS_WIDTH - textSecTitleRef.current.width) * .5
   }, [])
 
 
@@ -275,8 +287,10 @@ export default (props: any) => {
 
       
     </Container>
-    
+    <Text ref={textTitleRef} text={MUSICBOX_TITLE} style={{ fontSize: 45, fontWeight: 'bold', textAlign: 'center', fill: '#333333', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .82} />
+    <Text ref={textSecTitleRef} text={MUSICBOX_SUBTITLE} style={{ fontSize: 20, textAlign: 'center', fill: '#333333', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .89} />
   </Stage>
+  <div class=" text-3xl" style={{ fontFamily: 'Fjalla One' }}>TEST</div>
   </div>
   
 }
