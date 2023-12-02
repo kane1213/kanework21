@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef, createRef } from "react";
 import audioData from '@/lib/box-ogg2.js';
 import { Midi } from '@tonejs/midi'
 import gsap from "gsap";
-import _ from 'lodash'
+// import _ from 'lodash'
 import { useNavigate } from "react-router-dom";
 
 
@@ -79,7 +79,10 @@ export default () => {
 
 
   async function readMidiFile(name: string) {
-    const { tracks } = await Midi.fromUrl(`/public/music/midi/${name}.mid`)
+    const _path = name.includes('.mid')
+      ? name
+      : `/public/music/midi/${name}.mid`
+    const { tracks } = await Midi.fromUrl(_path)
     // const { tracks } = await Midi.fromUrl(name)
     const _tracks = tracks.filter((track: any) => track.notes.length > 0)
     setTracks(_tracks)
@@ -146,7 +149,10 @@ export default () => {
   }
 
   function getToMusic () {
-    router(`/music/${musicMidi}/${chosen.join()}`)
+    const path = !musicMidi.includes('.mid')
+      ? musicMidi
+      : musicMidi.split('/').slice(-1)[0].replace('.mid', '')
+    router(`/music/${path}/${chosen.join()}`)
   }
 
   // const filterdNotes: string[] = noteList
