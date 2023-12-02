@@ -18,18 +18,12 @@ import wood from '/public/images/musicbox/musicBoxWood2.png';
 import metal from '/public/images/musicbox/metal.png';
 import handGear from '/public/images/musicbox/handGear.png'
 import pad from '/public/images/musicbox/pad.png'
-interface NoteData {
-  midi: number,
-  name: string,
-  time: number,
-  duration: number
-}
 
 export default (props: any) => {
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
-  const NOTE_GAP: number = 200
-  const DURATION: number = .1 / 12
+  const NOTE_GAP: number = 160
+  const DURATION: number = .1 / 9
 
   const GEAR_HEIGHT: number = 96
   const GEAR_WIDTH: number = 39
@@ -65,13 +59,21 @@ export default (props: any) => {
     if (notes.length === 0) return {}
     const groupNotes = _.groupBy(notes, 'name')
     const useNumber: number[] = _.uniq(Object.keys(groupNotes).map((key: string) => parseInt(key.slice(-1)[0])))
-    return useNumber.reduce((sum: any, num: number) => {
+    const _notes = useNumber.reduce((sum: any, num: number) => {
       keyboards[num].forEach((key: string) => {
         const noteKey = `${key}${num}`
-        sum[noteKey] = groupNotes.hasOwnProperty(noteKey) ? groupNotes[noteKey] : []
+        // sum[noteKey] = groupNotes.hasOwnProperty(noteKey) 
+        //   ? _.uniqBy(groupNotes[noteKey], (note: any) => Math.floor(note.time)) 
+        //   : []
+        sum[noteKey] = groupNotes.hasOwnProperty(noteKey) 
+          ? groupNotes[noteKey] 
+          : []
       })
       return sum
     }, {})
+    return _notes
+
+
   }, [notes])
 
   const NOTE_SIZE: number = (CANVAS_WIDTH - 281) / kNotes.length - 1
