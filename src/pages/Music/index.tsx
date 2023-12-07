@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef, createRef } from "react";
 import { Sprite, Stage, Container, TilingSprite, Text } from "react-pixi-fiber";
 import AnimatedSprite from '@/components/AnimationSprite';
 import audioData from '@/lib/box-ogg2.js';
+import _ from 'lodash';
 import { Midi } from '@tonejs/midi'
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 import gsap from "gsap";
@@ -20,14 +21,23 @@ import handGear from '/public/images/musicbox/handGear.png'
 import pad from '/public/images/musicbox/pad.png'
 
 export default (props: any) => {
-  const MUSICBOX_TITLE = 'SHENMUE 1'
-  const MUSICBOX_SUBTITLE = 'Main Theme'
+  let MUSICBOX_TITLE: string = ''
+  let MUSICBOX_SUBTITLE: string = ''
+
+  if (!!window.location.search) {
+    const query = window.location.search.replace('?', '').split('&').reduce((sum: any, str: string) => {
+      const [key, value] = str.split('=')
+      return ({ ...sum, [key]: value})
+    }, {})
+
+    MUSICBOX_TITLE = query.title.toUpperCase().replaceAll('%20', ' ')
+    MUSICBOX_SUBTITLE = query.subtitle.replaceAll('%20', ' ')
+  }
 
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
-  const NOTE_GAP: number = 160
+  const NOTE_GAP: number = 150
   const DURATION: number = .1 / 9
-
   const GEAR_HEIGHT: number = 96
   const GEAR_WIDTH: number = 39
 
@@ -55,9 +65,6 @@ export default (props: any) => {
   }
 
   const kNotes: string[] = Object.entries(keyboards).reduce((sum: any, kbs: any) => sum.concat(kbs[1].map((k: string) => k + kbs[0])) , [])
-  
-
-  
   const noteNameGroup = useMemo(() => {
     if (notes.length === 0) return {}
     const groupNotes = _.groupBy(notes, 'name')
@@ -99,6 +106,15 @@ export default (props: any) => {
     playAudio(text, 0, 1.5)
 
     aniContainer.current[text]()
+  }
+
+  function copyToClipboard(text: string) {
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
   }
 
   function playAudio(text: string, time: number, duration: number) {
@@ -189,6 +205,8 @@ export default (props: any) => {
     if (_notes.length === 0) return
     const _noteList = _notes.slice()
     setNotes(_noteList)
+
+    copyToClipboard(`${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} Music Box`)
   }
 
   useEffect(() => {
@@ -238,6 +256,7 @@ export default (props: any) => {
 
     textTitleRef.current.x = (CANVAS_WIDTH - textTitleRef.current.width) * .5
     textSecTitleRef.current.x = (CANVAS_WIDTH - textSecTitleRef.current.width) * .5
+
   }, [])
 
 
@@ -287,10 +306,10 @@ export default (props: any) => {
 
       
     </Container>
-    <Text ref={textTitleRef} text={MUSICBOX_TITLE} style={{ fontSize: 45, fontWeight: 'bold', textAlign: 'center', fill: '#333333', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .82} />
-    <Text ref={textSecTitleRef} text={MUSICBOX_SUBTITLE} style={{ fontSize: 20, textAlign: 'center', fill: '#333333', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .89} />
+    <Text ref={textTitleRef} text={MUSICBOX_TITLE} style={{ fontSize: 45, fontWeight: 'bold', fill: '#111111', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .82} />
+    <Text ref={textSecTitleRef} text={MUSICBOX_SUBTITLE} style={{ fontSize: 28, fill: '#111111', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .89} />
   </Stage>
-  <div class=" text-3xl" style={{ fontFamily: 'Fjalla One' }}>TEST</div>
+
   </div>
   
 }
