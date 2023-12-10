@@ -72,12 +72,12 @@ export default (props: any) => {
     const _notes = useNumber.reduce((sum: any, num: number) => {
       keyboards[num].forEach((key: string) => {
         const noteKey = `${key}${num}`
-        // sum[noteKey] = groupNotes.hasOwnProperty(noteKey) 
-        //   ? _.uniqBy(groupNotes[noteKey], (note: any) => Math.floor(note.time)) 
-        //   : []
-        sum[noteKey] = groupNotes.hasOwnProperty(noteKey) 
-          ? groupNotes[noteKey] 
+        sum[noteKey] = groupNotes.hasOwnProperty(noteKey) && audioData.hasOwnProperty(noteKey)
+          ? _.uniqBy(groupNotes[noteKey], (note: any) => Math.floor(note.time * 7.5)) 
           : []
+        // sum[noteKey] = groupNotes.hasOwnProperty(noteKey) 
+        //   ? groupNotes[noteKey] 
+        //   : []
       })
       return sum
     }, {})
@@ -256,7 +256,6 @@ export default (props: any) => {
 
     textTitleRef.current.x = (CANVAS_WIDTH - textTitleRef.current.width) * .5
     textSecTitleRef.current.x = (CANVAS_WIDTH - textSecTitleRef.current.width) * .5
-
   }, [])
 
 
