@@ -23,6 +23,7 @@ import pad from '/public/images/musicbox/pad.png'
 export default (props: any) => {
   let MUSICBOX_TITLE: string = ''
   let MUSICBOX_SUBTITLE: string = ''
+  let forbidNote: string[] = []
 
   if (!!window.location.search) {
     const query = window.location.search.replace('?', '').split('&').reduce((sum: any, str: string) => {
@@ -30,14 +31,16 @@ export default (props: any) => {
       return ({ ...sum, [key]: value})
     }, {})
 
-    MUSICBOX_TITLE = query.title.toUpperCase().replaceAll('%20', ' ')
-    MUSICBOX_SUBTITLE = query.subtitle.replaceAll('%20', ' ')
+    forbidNote = query?.forbid ? query.forbid.replaceAll('%23', '#').split(',') : []
+    console.log(forbidNote)
+    MUSICBOX_TITLE = query.title ? query.title.toUpperCase().replaceAll('%20', ' ') : ''
+    MUSICBOX_SUBTITLE = query.subtitle ? query.subtitle.replaceAll('%20', ' ') : ''
   }
 
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
-  const NOTE_GAP: number = 150
-  const DURATION: number = .1 / 9
+  const NOTE_GAP: number = 100
+  const DURATION: number = .1 / 6
   const GEAR_HEIGHT: number = 96
   const GEAR_WIDTH: number = 39
 
@@ -72,7 +75,7 @@ export default (props: any) => {
     const _notes = useNumber.reduce((sum: any, num: number) => {
       keyboards[num].forEach((key: string) => {
         const noteKey = `${key}${num}`
-        sum[noteKey] = groupNotes.hasOwnProperty(noteKey) && audioData.hasOwnProperty(noteKey)
+        sum[noteKey] = groupNotes.hasOwnProperty(noteKey) && audioData.hasOwnProperty(noteKey) && !forbidNote.includes(noteKey)
           ? _.uniqBy(groupNotes[noteKey], (note: any) => Math.floor(note.time * 7.5)) 
           : []
         // sum[noteKey] = groupNotes.hasOwnProperty(noteKey) 
@@ -87,7 +90,7 @@ export default (props: any) => {
   }, [notes])
 
   const NOTE_SIZE: number = (CANVAS_WIDTH - 281) / kNotes.length - 1
-
+  const gaspRef = useRef<any>();
   const stageRef = createRef<any>();
   const notesRef = createRef<any>();
   const handGearRef = createRef<any>()
@@ -166,7 +169,7 @@ export default (props: any) => {
     if (notes.length > 0) {
       notesRef.current.y = CANVAS_HEIGHT * .5 + 5
       notesRef.current.mask = maskRef.current;
-      gsap.to(notesRef.current, {
+      gaspRef.current = gsap.to(notesRef.current, {
         y: -notesRef.current.height * 1.5,
         duration: notesRef.current.height * DURATION,
         ease: "none",
@@ -196,6 +199,16 @@ export default (props: any) => {
 
   
   function playMusicEvent () {
+
+    if (!!gaspRef.current) {
+      if (gaspRef.current.isActive()) {
+        gaspRef.current.pause()
+      } else {
+        // gaspRef.current.resume()
+      }
+      return
+    }
+
     if (chosen.length === 0) return
     const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => {
       const _newNotes = track.notes.map((note: any) => ({ ...note, name: note.name, time: note.time }))
@@ -205,7 +218,6 @@ export default (props: any) => {
     if (_notes.length === 0) return
     const _noteList = _notes.slice()
     setNotes(_noteList)
-
     copyToClipboard(`${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} Music Box`)
   }
 
@@ -286,7 +298,7 @@ export default (props: any) => {
       {
         ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(( [key, notes]: any, notesIndex: number): any => {
           return notes.map((note: any, noteIndex: number) => {
-            return <Sprite eventMode="dynamic" onclick={() => {playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(kNotes.indexOf(key) * (NOTE_SIZE + 1))} y={note.time * NOTE_GAP} zIndex={noteIndex}>  
+            return <Sprite eventMode="dynamic" onclick={() => {console.log(key); playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(kNotes.indexOf(key) * (NOTE_SIZE + 1))} y={note.time * NOTE_GAP} zIndex={noteIndex}>  
               {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
             </Sprite>
           })
