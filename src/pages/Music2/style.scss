@@ -1,7 +1,25 @@
 .video-frame {
-  @apply fixed right-12 top-[405px] bg-gray-800 p-2 rounded-xl rounded-br-3xl aspect-[4/3] w-96 flex justify-center items-center;
+  @apply fixed right-12 top-[405px] bg-gray-800 py-2 rounded-xl rounded-br-3xl aspect-[4/3] w-96 flex justify-center items-center;
   box-shadow: 0 1px 0 0 #fff, 0 0 0 2px #000 inset;
-  .light {
-    @apply absolute w-2 h-2 rounded-full bg-yellow-400 left-4 top-1/2;
+  > div.gapside {
+    @apply flex justify-center items-center;
+    .light {
+      @apply w-2 h-2 rounded-full bg-yellow-400;
+    }
+  }
+}
+
+.text-frame {
+  @apply fixed left-[120px] top-[420px];
+  .title {
+    @apply text-[50px] font-bold text-gray-800 drop-shadow-md;
+    text-shadow: #ffffff6d 0 1px;
+    font-Family: '"vt323", "Fjalla One", "Source Sans Pro"';
+    src: url('/public/ttf/VT323-Regular.ttf');
+  }
+  .sub {
+    @apply text-3xl font-bold  text-gray-900;
+    font-family: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif';
+    text-shadow: #ffffff6d 0 1px;
   }
 }

@@ -17,35 +17,40 @@ import gear from '/public/images/musicbox/gear.png';
 import wheel from '/public/images/musicbox/wheel.png';
 import wood from '/public/images/musicbox/musicBoxWood3.png';
 import metal from '/public/images/musicbox/metal.png';
-import handGear from '/public/images/musicbox/handGear.png'
+import pwdBtn from '/public/images/musicbox/powerBtn.png';
 import pad from '/public/images/musicbox/pad.png'
 import YouTubePlayer from 'youtube-player';
 import './style.scss'
 export default (props: any) => {
 
-
+  let VIDEO_WIDTH: number = 300
   let MUSICBOX_TITLE: string = ''
   let MUSICBOX_SUBTITLE: string = ''
   let forbidNote: string[] = []
+  let ytId: string = ''
 
   if (!!window.location.search) {
     const query = window.location.search.replace('?', '').split('&').reduce((sum: any, str: string) => {
       const [key, value] = str.split('=')
       return ({ ...sum, [key]: value})
     }, {})
-
+    if (query.hasOwnProperty('wide')) VIDEO_WIDTH = 453
+    
     forbidNote = query?.forbid ? query.forbid.replaceAll('%23', '#').split(',') : []
     console.log(forbidNote)
-    MUSICBOX_TITLE = query.title ? query.title.toUpperCase().replaceAll('%20', ' ') : ''
-    MUSICBOX_SUBTITLE = query.subtitle ? query.subtitle.replaceAll('%20', ' ') : ''
+    MUSICBOX_TITLE = query.title ? decodeURI(query.title) : ''
+    MUSICBOX_SUBTITLE = query.subtitle ? decodeURI(query.subtitle) : ''
+
+    if (query?.ytId) ytId = query?.ytId
   }
+
+
+
 
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
   const NOTE_GAP: number = 100
   const DURATION: number = .1 / 6
-  const GEAR_HEIGHT: number = 96
-  const GEAR_WIDTH: number = 39
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -104,9 +109,6 @@ export default (props: any) => {
   const wheelMaskRef = createRef<any>();
   const wheelRefOne = createRef<any>();
   const wheelRefTwo = createRef<any>();
-  const textTitleRef = createRef<any>();
-  const textSecTitleRef = createRef<any>();
-  // const media_recorder = useRef<any>();
   const finishNotes = useRef<any>([]);
 
   function playAudioByNoteText (text: string) {
@@ -185,7 +187,7 @@ export default (props: any) => {
           const currentY = Math.floor(notesRef.current.y)
           const equalZeroSprite = notesRef.current.children
             .filter((child: any) => !finishNotes.current.includes(child))
-            .filter((child: any) => Math.floor(child.y + currentY) < 244)
+            .filter((child: any) => Math.floor(child.y + currentY) < 260)
           if (equalZeroSprite.length > 0) {
             finishNotes.current = finishNotes.current.concat(equalZeroSprite)
             equalZeroSprite.forEach((sprite: any) => {{
@@ -223,7 +225,7 @@ export default (props: any) => {
     const _noteList = _notes.slice()
     setNotes(_noteList)
     copyToClipboard(`${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} Music Box`)
-    startVideo()
+    // startVideo()
   }
 
   useEffect(() => {
@@ -234,20 +236,16 @@ export default (props: any) => {
 
     gsap.to(wheelRefOne.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
     gsap.to(wheelRefTwo.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
-
-
-    textTitleRef.current.x = (CANVAS_WIDTH - textTitleRef.current.width) * .5
-    textSecTitleRef.current.x = (CANVAS_WIDTH - textSecTitleRef.current.width) * .5
-
-
     
-    handleVideo()
+    if (!!ytId) handleVideo()
 
 
   }, [])
 
   function handleVideo () {
-    player.current = YouTubePlayer('video-player', { videoId: 'oyWtclsEFgA', width: 300, height: 255});
+    const width: number = VIDEO_WIDTH
+    const videoId = ytId
+    player.current = YouTubePlayer('video-player', { videoId, width, height: 255});
 
     // , playerVars: {
     //   // controls: 0,
@@ -265,13 +263,16 @@ export default (props: any) => {
 
     document.querySelectorAll('.html5-video-player > div:not(.html5-video-container)').forEach((el: any) => {
       el.style.display = 'none'
-      console.log('el')
     })
+
+  //   document.querySelectorAll('.html5-video-player > div:not(.html5-video-container)').forEach(el => {
+  //     el.style.display = 'none'
+  // })
 
   }
 
 
-  return <div className="cursor-none">
+  return <div className=" cursor-none">
   <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} onClick={playMusicEvent}>
 
     {/* <Sprite ref={handGearRef} width={GEAR_WIDTH} height={GEAR_HEIGHT} texture={Texture.from(handGear)} /> */}
@@ -283,6 +284,8 @@ export default (props: any) => {
       <TilingSprite texture={Texture.from(metal)} width={1000} height={260} y={9} x={121} />
       <TilingSprite ref={wheelRefTwo} texture={Texture.from(wheel)} width={130} height={350} y={-15} x={1119} />
       <Sprite ref={wheelMaskRef} width={1260} height={315} texture={Texture.WHITE} x={-9}  y={-15} tint="0x0000ff" />
+      <Sprite width={73} height={73} texture={Texture.from(pwdBtn)} x={30} y={585} />
+      
     </Container>
 
     {/* <Sprite ref={maskRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT * .5} texture={Texture.WHITE} tint="0x000000" x={0} /> */}
@@ -314,13 +317,26 @@ export default (props: any) => {
     </Container>
 
     
-    <Text ref={textTitleRef} text={MUSICBOX_TITLE} style={{ fontSize: 45, fontWeight: 'bold', fill: '#111111', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .82} />
-    <Text ref={textSecTitleRef} text={MUSICBOX_SUBTITLE} style={{ fontSize: 28, fill: '#111111', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .89} />
+    {/* <Text ref={textTitleRef} text={MUSICBOX_TITLE} style={{ fontSize: 45, fontWeight: 'bold', fill: '#111111', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .82} />
+    <Text ref={textSecTitleRef} text={MUSICBOX_SUBTITLE} style={{ fontSize: 28, fill: '#111111', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .89} /> */}
   </Stage>
+
+  <div className="text-frame">
+    <div className="title">{ MUSICBOX_TITLE }</div>
+    <div className="sub">{ MUSICBOX_SUBTITLE }</div>
+  </div>
   
   <div className="video-frame">
-    <div className="light" />
-    <div id="video-player" />
+    <div className="gapside w-10">
+      <div className="text-center flex items-center flex-col">
+        <div className="light" />
+        <div className="text-xs text-white">pwr</div>
+      </div>
+    </div>
+    <div>
+      <div id="video-player" />
+    </div>
+    <div className="w-10" />
   </div>
 
   {/* /music/m0894_01/0,3,5 */}
