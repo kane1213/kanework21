@@ -1,7 +1,12 @@
 .video-frame {
-  @apply fixed right-12 top-[405px] bg-gray-800 py-2 rounded-xl rounded-br-3xl aspect-[4/3] w-96 flex justify-center items-center;
+  @apply fixed left-[140px] top-[400px] bg-gray-800 py-2 rounded-xl rounded-br-3xl aspect-[4/3] w-[390px] flex justify-center items-center;
   box-shadow: 0 1px 0 0 #fff, 0 0 0 2px #000 inset;
   > div.gapside {
+    &::after {
+      content: '';
+      // @apply block w-1/2 h-full bg-white/10 absolute right-0 top-0 rounded-tr-xl rounded-br-3xl;
+      @apply block w-full h-1/2 bg-gradient-to-b from-transparent to-white/10 absolute right-0 top-0 rounded-t-xl;
+    }
     @apply flex justify-center items-center;
     .light {
       @apply w-2 h-2 rounded-full bg-yellow-400;
@@ -10,15 +15,18 @@
 }
 
 .text-frame {
-  @apply fixed left-[120px] top-[420px];
+  @apply fixed left-[580px] top-[450px];
+  > div {
+    @apply min-w-[600px] w-full ;
+  }
   .title {
-    @apply text-[50px] font-bold text-gray-800 drop-shadow-md;
+    @apply text-[60px] font-bold text-black/70 drop-shadow-md leading-[48px];
     text-shadow: #ffffff6d 0 1px;
-    font-Family: '"vt323", "Fjalla One", "Source Sans Pro"';
+    font-Family: '"vt323", "Fjalla One", "Source Sans Pro" "Handwriting"';
     src: url('/public/ttf/VT323-Regular.ttf');
   }
   .sub {
-    @apply text-3xl font-bold  text-gray-900;
+    @apply text-3xl font-bold  text-gray-900 mt-3;
     font-family: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif';
     text-shadow: #ffffff6d 0 1px;
   }

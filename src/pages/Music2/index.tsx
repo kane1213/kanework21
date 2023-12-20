@@ -19,6 +19,7 @@ import wood from '/public/images/musicbox/musicBoxWood3.png';
 import metal from '/public/images/musicbox/metal.png';
 import pwdBtn from '/public/images/musicbox/powerBtn.png';
 import pad from '/public/images/musicbox/pad.png'
+import logo from '/public/images/musicbox/logo.png'
 import YouTubePlayer from 'youtube-player';
 import './style.scss'
 export default (props: any) => {
@@ -28,6 +29,7 @@ export default (props: any) => {
   let MUSICBOX_SUBTITLE: string = ''
   let forbidNote: string[] = []
   let ytId: string = ''
+  let START_HEIGHT = 0
 
   if (!!window.location.search) {
     const query = window.location.search.replace('?', '').split('&').reduce((sum: any, str: string) => {
@@ -37,20 +39,16 @@ export default (props: any) => {
     if (query.hasOwnProperty('wide')) VIDEO_WIDTH = 453
     
     forbidNote = query?.forbid ? query.forbid.replaceAll('%23', '#').split(',') : []
-    console.log(forbidNote)
     MUSICBOX_TITLE = query.title ? decodeURI(query.title) : ''
     MUSICBOX_SUBTITLE = query.subtitle ? decodeURI(query.subtitle) : ''
-
+    if (query?.start) START_HEIGHT = query.start
     if (query?.ytId) ytId = query?.ytId
   }
 
-
-
-
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
-  const NOTE_GAP: number = 100
-  const DURATION: number = .1 / 6
+  const NOTE_GAP: number = 150
+  const DURATION: number = .1 / 9
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -171,49 +169,51 @@ export default (props: any) => {
   }
 
   useEffect(() => {
-
-    if (notes.length > 0) {
-      notesRef.current.y = CANVAS_HEIGHT * .5 + 5
-      notesRef.current.mask = maskRef.current;
-      gaspRef.current = gsap.to(notesRef.current, {
-        y: -notesRef.current.height * 1.5,
-        duration: notesRef.current.height * DURATION,
-        ease: "none",
-        // delay: 0.5,
-        onStart() {
-          // console.log(notesRef.current.children)
-        },
-        onUpdate() {
-          const currentY = Math.floor(notesRef.current.y)
-          const equalZeroSprite = notesRef.current.children
-            .filter((child: any) => !finishNotes.current.includes(child))
-            .filter((child: any) => Math.floor(child.y + currentY) < 260)
-          if (equalZeroSprite.length > 0) {
-            finishNotes.current = finishNotes.current.concat(equalZeroSprite)
-            equalZeroSprite.forEach((sprite: any) => {{
-              playAudioByNoteText(sprite.alt);
-            }})
-          }
-        },
-        onComplete() {
-          console.log('done')
-          console.log({ height: notesRef.current.height, y: notesRef.current.y })
-        }
-      })
-    }
+    if (notes.length > 0) musicBoxStart()
   }, [notes])
+
+  function musicBoxStart () {
+    
+    notesRef.current.y = (CANVAS_HEIGHT * .5 + 5) - parseInt(START_HEIGHT)
+    notesRef.current.mask = maskRef.current;
+    gaspRef.current = gsap.to(notesRef.current, {
+      y: -notesRef.current.height * 1.5,
+      duration: notesRef.current.height * DURATION,
+      ease: "none",
+      // delay: 0.5,
+      onStart() {
+        finishNotes.current = []
+        // console.log(notesRef.current.children)
+      },
+      onUpdate() {
+        const currentY = Math.floor(notesRef.current.y)
+        const equalZeroSprite = notesRef.current.children
+          .filter((child: any) => !finishNotes.current.includes(child))
+          .filter((child: any) => Math.floor(child.y + currentY) < 260)
+        if (equalZeroSprite.length > 0) {
+          finishNotes.current = finishNotes.current.concat(equalZeroSprite)
+          equalZeroSprite.forEach((sprite: any) => {{
+            playAudioByNoteText(sprite.alt);
+          }})
+        }
+      },
+      onComplete() {
+        musicBoxStart()
+      }
+    })
+  }
 
   
   function playMusicEvent () {
 
-    if (!!gaspRef.current) {
-      if (gaspRef.current.isActive()) {
-        gaspRef.current.pause()
-      } else {
-        // gaspRef.current.resume()
-      }
-      return
-    }
+    // if (!!gaspRef.current) {
+    //   if (gaspRef.current.isActive()) {
+    //     gaspRef.current.pause()
+    //   } else {
+    //     // gaspRef.current.resume()
+    //   }
+    //   return
+    // }
 
     if (chosen.length === 0) return
     const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => {
@@ -245,7 +245,7 @@ export default (props: any) => {
   function handleVideo () {
     const width: number = VIDEO_WIDTH
     const videoId = ytId
-    player.current = YouTubePlayer('video-player', { videoId, width, height: 255});
+    player.current = YouTubePlayer('video-player', { videoId, width, height: 255, rates: 2, playVars: { rates: 2 }});
 
     // , playerVars: {
     //   // controls: 0,
@@ -254,6 +254,7 @@ export default (props: any) => {
     //   enablejsapi: 1
     // }, 
     // player.current.loadVideoById('oyWtclsEFgA');
+    // player.current.setPlaybackRate(10)
     player.current.mute()
   }
 
@@ -280,12 +281,12 @@ export default (props: any) => {
     <Container x={(CANVAS_WIDTH - 1240) * .5} y={25}>
       <Sprite width={1240} height={681} texture={Texture.from(wood)} x={0} y={0} />
       <Sprite ref={maskRef} width={1000} height={261} texture={Texture.WHITE} x={121}  y={8} tint="0x000000" />
-      <TilingSprite ref={wheelRefOne} texture={Texture.from(wheel)} width={130} height={350} y={-15} x={-9} />
+      <TilingSprite ref={wheelRefOne} texture={Texture.from(wheel)} width={110} height={350} y={-15} x={11} />
       <TilingSprite texture={Texture.from(metal)} width={1000} height={260} y={9} x={121} />
-      <TilingSprite ref={wheelRefTwo} texture={Texture.from(wheel)} width={130} height={350} y={-15} x={1119} />
+      <TilingSprite ref={wheelRefTwo} texture={Texture.from(wheel)} width={110} height={350} y={-15} x={1119} />
       <Sprite ref={wheelMaskRef} width={1260} height={315} texture={Texture.WHITE} x={-9}  y={-15} tint="0x0000ff" />
-      <Sprite width={73} height={73} texture={Texture.from(pwdBtn)} x={30} y={585} />
-      
+      <Sprite width={73} height={73} texture={Texture.from(pwdBtn)} x={1120} y={580} />
+      <Sprite texture={Texture.from(logo)} width={154} height={39} x={950} y={600} />
     </Container>
 
     {/* <Sprite ref={maskRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT * .5} texture={Texture.WHITE} tint="0x000000" x={0} /> */}
@@ -314,6 +315,7 @@ export default (props: any) => {
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={124} />
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={604} />
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={1074} />
+      
     </Container>
 
     
@@ -333,7 +335,7 @@ export default (props: any) => {
         <div className="text-xs text-white">pwr</div>
       </div>
     </div>
-    <div>
+    <div className="overflow-y-hidden">
       <div id="video-player" />
     </div>
     <div className="w-10" />
