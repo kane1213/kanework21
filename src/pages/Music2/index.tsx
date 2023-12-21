@@ -36,7 +36,7 @@ export default (props: any) => {
       const [key, value] = str.split('=')
       return ({ ...sum, [key]: value})
     }, {})
-    if (query.hasOwnProperty('wide')) VIDEO_WIDTH = 453
+    if (query.hasOwnProperty('wide')) VIDEO_WIDTH = 420
     
     forbidNote = query?.forbid ? query.forbid.replaceAll('%23', '#').split(',') : []
     MUSICBOX_TITLE = query.title ? decodeURI(query.title) : ''
@@ -47,8 +47,8 @@ export default (props: any) => {
 
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
-  const NOTE_GAP: number = 150
-  const DURATION: number = .1 / 9
+  const NOTE_GAP: number = 200
+  const DURATION: number = .1 / 18
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -108,6 +108,7 @@ export default (props: any) => {
   const wheelRefOne = createRef<any>();
   const wheelRefTwo = createRef<any>();
   const finishNotes = useRef<any>([]);
+  const process = createRef<number>();
 
   function playAudioByNoteText (text: string) {
     playAudio(text, 0, 1.5)
@@ -177,7 +178,7 @@ export default (props: any) => {
     notesRef.current.y = (CANVAS_HEIGHT * .5 + 5) - parseInt(START_HEIGHT)
     notesRef.current.mask = maskRef.current;
     gaspRef.current = gsap.to(notesRef.current, {
-      y: -notesRef.current.height * 1.5,
+      y: -notesRef.current.height * 1,
       duration: notesRef.current.height * DURATION,
       ease: "none",
       // delay: 0.5,
@@ -195,6 +196,7 @@ export default (props: any) => {
           equalZeroSprite.forEach((sprite: any) => {{
             playAudioByNoteText(sprite.alt);
           }})
+          showProcess(notesRef.current.height, notesRef.current.y)
         }
       },
       onComplete() {
@@ -203,6 +205,13 @@ export default (props: any) => {
     })
   }
 
+  function showProcess (height: number, y: number) {
+    const _process = Math.floor((Math.abs(y)/Math.abs(height) * 100)) + 2
+    if (process.current != _process) {
+      process.current = _process
+      document.title = process.current + '%'
+    }
+  }
   
   function playMusicEvent () {
 
@@ -323,12 +332,12 @@ export default (props: any) => {
     <Text ref={textSecTitleRef} text={MUSICBOX_SUBTITLE} style={{ fontSize: 28, fill: '#111111', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .89} /> */}
   </Stage>
 
-  <div className="text-frame">
+  <div className={`text-frame ${VIDEO_WIDTH > 300 ? 'wide':''}`}>
     <div className="title">{ MUSICBOX_TITLE }</div>
     <div className="sub">{ MUSICBOX_SUBTITLE }</div>
   </div>
   
-  <div className="video-frame">
+  <div className={`video-frame ${VIDEO_WIDTH > 300 ? 'wide':''}`}>
     <div className="gapside w-10">
       <div className="text-center flex items-center flex-col">
         <div className="light" />

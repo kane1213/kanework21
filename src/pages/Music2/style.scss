@@ -1,21 +1,30 @@
 .video-frame {
   @apply fixed left-[140px] top-[400px] bg-gray-800 py-2 rounded-xl rounded-br-3xl aspect-[4/3] w-[390px] flex justify-center items-center;
+  &.wide {
+    @apply left-[70px] aspect-[16/9.5] w-[500px];
+  }
   box-shadow: 0 1px 0 0 #fff, 0 0 0 2px #000 inset;
   > div.gapside {
     &::after {
       content: '';
       // @apply block w-1/2 h-full bg-white/10 absolute right-0 top-0 rounded-tr-xl rounded-br-3xl;
-      @apply block w-full h-1/2 bg-gradient-to-b from-transparent to-white/10 absolute right-0 top-0 rounded-t-xl;
+      @apply block w-full h-1/2 bg-gradient-to-b from-transparent to-white/5 absolute right-0 top-0 rounded-t-xl;
     }
     @apply flex justify-center items-center;
     .light {
       @apply w-2 h-2 rounded-full bg-yellow-400;
     }
   }
+  iframe {
+    opacity: 0.8;
+  }
 }
 
 .text-frame {
   @apply fixed left-[580px] top-[450px];
+  &.wide {
+    @apply left-[610px];
+  }
   > div {
     @apply min-w-[600px] w-full ;
   }
