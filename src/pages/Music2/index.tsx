@@ -350,7 +350,7 @@ export default (props: any) => {
         <div className="text-xs text-white">pwr</div>
       </div>
     </div>
-    <div className="overflow-y-hidden">
+    <div className="overflow-y-hidden video-frame">
       <div id="video-player" />
     </div>
     <div className="w-10" />

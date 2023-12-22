@@ -17,6 +17,17 @@
   }
   iframe {
     opacity: 0.8;
+    
+  }
+
+  div.video-frame {
+    // @apply sepia;
+    iframe {
+      // @apply contrast-[0.85];
+      @apply grayscale-[.55];
+      // @apply blur-sm;
+      // @apply contrast-[125%];
+    }
   }
 }
 
