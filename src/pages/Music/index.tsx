@@ -19,7 +19,6 @@ import wood from '/public/images/musicbox/musicBoxWood2.png';
 import metal from '/public/images/musicbox/metal.png';
 import handGear from '/public/images/musicbox/handGear.png'
 import pad from '/public/images/musicbox/pad.png'
-import YouTubePlayer from 'youtube-player';
 
 export default (props: any) => {
 
@@ -36,14 +35,14 @@ export default (props: any) => {
 
     forbidNote = query?.forbid ? query.forbid.replaceAll('%23', '#').split(',') : []
     console.log(forbidNote)
-    MUSICBOX_TITLE = query.title ? query.title.toUpperCase().replaceAll('%20', ' ') : ''
-    MUSICBOX_SUBTITLE = query.subtitle ? query.subtitle.replaceAll('%20', ' ') : ''
+    MUSICBOX_TITLE = query.title ? decodeURI(query.title).toUpperCase() : ''
+    MUSICBOX_SUBTITLE = query.subtitle ? decodeURI(query.subtitle) : ''
   }
 
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
   const NOTE_GAP: number = 100
-  const DURATION: number = .1 / 6
+  const DURATION: number = .1 / 10.5
   const GEAR_HEIGHT: number = 96
   const GEAR_WIDTH: number = 39
 
@@ -174,7 +173,7 @@ export default (props: any) => {
       notesRef.current.y = CANVAS_HEIGHT * .5 + 5
       notesRef.current.mask = maskRef.current;
       gaspRef.current = gsap.to(notesRef.current, {
-        y: -notesRef.current.height * 1.5,
+        y: -notesRef.current.height * 1,
         duration: notesRef.current.height * DURATION,
         ease: "none",
         // delay: 0.5,

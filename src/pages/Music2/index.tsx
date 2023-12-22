@@ -47,8 +47,8 @@ export default (props: any) => {
 
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
-  const NOTE_GAP: number = 200
-  const DURATION: number = .1 / 18
+  const NOTE_GAP: number = 100
+  const DURATION: number = .1 / 10.5
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -170,6 +170,12 @@ export default (props: any) => {
   }
 
   useEffect(() => {
+
+    if (!!gaspRef.current) {
+      gaspRef.current.pause()
+      return
+    }
+
     if (notes.length > 0) musicBoxStart()
   }, [notes])
 
@@ -282,7 +288,7 @@ export default (props: any) => {
   }
 
 
-  return <div className=" cursor-none">
+  return <div className="cursor-none">
   <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} onClick={playMusicEvent}>
 
     {/* <Sprite ref={handGearRef} width={GEAR_WIDTH} height={GEAR_HEIGHT} texture={Texture.from(handGear)} /> */}

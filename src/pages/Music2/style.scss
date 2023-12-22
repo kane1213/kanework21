@@ -26,7 +26,7 @@
     @apply left-[610px];
   }
   > div {
-    @apply min-w-[600px] w-full ;
+    @apply max-w-[600px] w-full ;
   }
   .title {
     @apply text-[60px] font-bold text-black/70 drop-shadow-md leading-[48px];
