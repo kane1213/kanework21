@@ -20,11 +20,14 @@
     
   }
 
-  div.video-frame {
+  div.video-iframe {
     // @apply sepia;
     iframe {
-      // @apply contrast-[0.85];
-      @apply grayscale-[.55];
+      // @apply opacity-50;
+      // video {
+      //   @apply grayscale-[.15];
+
+      // }
       // @apply blur-sm;
       // @apply contrast-[125%];
     }

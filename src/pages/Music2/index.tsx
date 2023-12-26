@@ -30,6 +30,8 @@ export default (props: any) => {
   let forbidNote: string[] = []
   let ytId: string = ''
   let START_HEIGHT = 0
+  let REPEAT = false
+  let SHOWARROW = false
 
   if (!!window.location.search) {
     const query = window.location.search.replace('?', '').split('&').reduce((sum: any, str: string) => {
@@ -43,12 +45,14 @@ export default (props: any) => {
     MUSICBOX_SUBTITLE = query.subtitle ? decodeURI(query.subtitle) : ''
     if (query?.start) START_HEIGHT = query.start
     if (query?.ytId) ytId = query?.ytId
+    if (query?.showArrow) SHOWARROW = true
+    if (query?.repeat) REPEAT = true
   }
 
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
   const NOTE_GAP: number = 100
-  const DURATION: number = .1 / 10.5
+  const DURATION: number = .1 / 6
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -57,6 +61,10 @@ export default (props: any) => {
   const [notes, setNotes] = useState<any>([])
   const [musicMidi, setMusicMidi] = useState<string>(name)
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const hideNotes = !!localStorage.getItem('hideNotes')
+    ? JSON.parse(localStorage.getItem('hideNotes'))
+    : []
+  
   let player = useRef<any>()
   // const [audios, setAudios] = useState<HTMLAudioElement[]>()
 
@@ -77,7 +85,10 @@ export default (props: any) => {
   const kNotes: string[] = Object.entries(keyboards).reduce((sum: any, kbs: any) => sum.concat(kbs[1].map((k: string) => k + kbs[0])) , [])
   const noteNameGroup = useMemo(() => {
     if (notes.length === 0) return {}
-    const groupNotes = _.groupBy(notes, 'name')
+
+    const showNotes = notes.filter((_note:any) => !hideNotes.some((_hideNote:any) => _hideNote.midi === _note.midi && _hideNote.time === _note.time))
+
+    const groupNotes = _.groupBy(showNotes, 'name')
     const useNumber: number[] = _.uniq(Object.keys(groupNotes).map((key: string) => parseInt(key.slice(-1)[0])))
     const _notes = useNumber.reduce((sum: any, num: number) => {
       keyboards[num].forEach((key: string) => {
@@ -99,7 +110,7 @@ export default (props: any) => {
   const NOTE_SIZE: number = (CANVAS_WIDTH - 281) / kNotes.length - 1
   const gaspRef = useRef<any>();
   const stageRef = createRef<any>();
-  const notesRef = createRef<any>();
+  const notesRef = useRef<any>();
   // const handGearRef = createRef<any>()
   const aniContainer = useRef<any>({});
   // const playingLineRef = createRef<any>();
@@ -128,14 +139,19 @@ export default (props: any) => {
   function playAudio(text: string, time: number, duration: number) {
     const base64Data = audioData[text]
     var audio = audioContext.createBufferSource();
-
+    const gainNode = audioContext.createGain();
+    
+    gainNode.gain.value = ([].some((k: string) => k === text)) // 'A3', 'F3', 'D#3', 'G#3', 'C4', 'D#5', 'A#4'
+      ? 0.4 
+      : 1
     try {
       // 解碼音樂 base64 字串
       audioContext.decodeAudioData(base64ToArrayBuffer(base64Data), function (buffer) {
           // 設置 Audio 元素的音訊緩衝
           audio.buffer = buffer;
           // 連接 Audio 元素到音訊輸出
-          audio.connect(audioContext.destination);
+          gainNode.connect(audioContext.destination);
+          audio.connect(gainNode);
           // 播放音樂
           audio.start();
       });
@@ -169,22 +185,9 @@ export default (props: any) => {
     setTracks(_tracks)
   }
 
-  useEffect(() => {
-
-    if (!!gaspRef.current) {
-      gaspRef.current.pause()
-      return
-    }
-
-    if (notes.length > 0) musicBoxStart()
-  }, [notes])
-
   function musicBoxStart () {
-    
-    notesRef.current.y = (CANVAS_HEIGHT * .5 + 5) - parseInt(START_HEIGHT)
-    notesRef.current.mask = maskRef.current;
     gaspRef.current = gsap.to(notesRef.current, {
-      y: -notesRef.current.height * 1,
+      y: -notesRef.current.height * 1.25,
       duration: notesRef.current.height * DURATION,
       ease: "none",
       // delay: 0.5,
@@ -206,7 +209,9 @@ export default (props: any) => {
         }
       },
       onComplete() {
-        musicBoxStart()
+        notesRef.current.y = (CANVAS_HEIGHT * .5 + 5) - parseInt(START_HEIGHT)
+        finishNotes.current = []
+        if (REPEAT) musicBoxStart()
       }
     })
   }
@@ -218,29 +223,50 @@ export default (props: any) => {
       document.title = process.current + '%'
     }
   }
-  
-  function playMusicEvent () {
 
-    // if (!!gaspRef.current) {
-    //   if (gaspRef.current.isActive()) {
-    //     gaspRef.current.pause()
-    //   } else {
-    //     // gaspRef.current.resume()
-    //   }
-    //   return
-    // }
-
+  function initMusicEvent () {
+    notesRef.current.mask = maskRef.current;
+    notesRef.current.y = (CANVAS_HEIGHT * .5 + 5) - parseInt(START_HEIGHT)
     if (chosen.length === 0) return
     const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => {
       const _newNotes = track.notes.map((note: any) => ({ ...note, name: note.name, time: note.time }))
       return _newNotes
     })
 
-    if (_notes.length === 0) return
     const _noteList = _notes.slice()
     setNotes(_noteList)
-    copyToClipboard(`${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} Music Box`)
-    // startVideo()
+    
+  }
+  
+  function playMusicEvent (event: any) {
+    console.log("start")
+    copyToClipboard(`【懷舊】 ${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} Music Box`)
+    
+
+    if (!!gaspRef.current) {
+      if (gaspRef.current.paused()) {
+        
+        
+        if (event.ctrlKey) {
+          notesRef.current.y = (CANVAS_HEIGHT * .5 + 5) - parseInt(START_HEIGHT)
+          finishNotes.current = []
+          gaspRef.current.restart()
+        } else {
+          gaspRef.current.resume()
+        }
+      } else {
+        gaspRef.current.pause()
+      }
+      return
+    }
+
+
+    if (notes.length > 0) {
+      
+      
+      musicBoxStart()
+    }
+
   }
 
   useEffect(() => {
@@ -253,9 +279,13 @@ export default (props: any) => {
     gsap.to(wheelRefTwo.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
     
     if (!!ytId) handleVideo()
-
+    
 
   }, [])
+  useEffect(() => {
+    if (midiTracks.length > 0) initMusicEvent()
+    
+  }, [midiTracks])
 
   function handleVideo () {
     const width: number = VIDEO_WIDTH
@@ -273,28 +303,20 @@ export default (props: any) => {
     player.current.mute()
   }
 
-  function startVideo () {
-    if (!player.current) return
-    player.current.playVideo();
+  // function startVideo () {
+  //   if (!player.current) return
+  //   player.current.playVideo();
 
-    document.querySelectorAll('.html5-video-player > div:not(.html5-video-container)').forEach((el: any) => {
-      el.style.display = 'none'
-    })
-
-  //   document.querySelectorAll('.html5-video-player > div:not(.html5-video-container)').forEach(el => {
+  //   document.querySelectorAll('.html5-video-player > div:not(.html5-video-container)').forEach((el: any) => {
   //     el.style.display = 'none'
-  // })
+  //   })
+  // }
 
-  }
 
-
-  return <div className="cursor-none">
-  <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} onClick={playMusicEvent}>
-
-    {/* <Sprite ref={handGearRef} width={GEAR_WIDTH} height={GEAR_HEIGHT} texture={Texture.from(handGear)} /> */}
- 
+  return <div className={SHOWARROW ? '' : 'cursor-none'}>
+  <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} >
     <Container x={(CANVAS_WIDTH - 1240) * .5} y={25}>
-      <Sprite width={1240} height={681} texture={Texture.from(wood)} x={0} y={0} />
+      <Sprite width={1240} height={681} texture={Texture.from(wood)} x={0} y={0}  interactive={true} onpointerdown={playMusicEvent}  />
       <Sprite ref={maskRef} width={1000} height={261} texture={Texture.WHITE} x={121}  y={8} tint="0x000000" />
       <TilingSprite ref={wheelRefOne} texture={Texture.from(wheel)} width={110} height={350} y={-15} x={11} />
       <TilingSprite texture={Texture.from(metal)} width={1000} height={260} y={9} x={121} />
@@ -304,12 +326,22 @@ export default (props: any) => {
       <Sprite texture={Texture.from(logo)} width={154} height={39} x={950} y={600} />
     </Container>
 
-    {/* <Sprite ref={maskRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT * .5} texture={Texture.WHITE} tint="0x000000" x={0} /> */}
     <Container ref={notesRef} x={141}>
       {
         ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(( [key, notes]: any, notesIndex: number): any => {
           return notes.map((note: any, noteIndex: number) => {
-            return <Sprite eventMode="dynamic" onclick={() => {console.log(key); playAudioByNoteText(key)}}  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(kNotes.indexOf(key) * (NOTE_SIZE + 1))} y={note.time * NOTE_GAP} zIndex={noteIndex}>  
+            return <Sprite eventMode="dynamic" onclick={(event: any) => {
+                if (event.ctrlKey) {
+                  const { midi, time } = note
+                  hideNotes.push({ midi, time})
+                  localStorage.setItem('hideNotes', JSON.stringify(hideNotes))
+                  setNotes((_notes: any) => _notes.filter((_note: any) => _note !== note) )
+                } else {
+                  console.log({ key })
+                  playAudioByNoteText(key)
+                }
+              }
+              }  texture={Texture.from(noteBall)} alt={key} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={(kNotes.indexOf(key) * (NOTE_SIZE + 1))} y={note.time * NOTE_GAP} zIndex={noteIndex}>  
               {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
             </Sprite>
           })
@@ -350,7 +382,7 @@ export default (props: any) => {
         <div className="text-xs text-white">pwr</div>
       </div>
     </div>
-    <div className="overflow-y-hidden video-frame">
+    <div className="overflow-y-hidden video-iframe">
       <div id="video-player" />
     </div>
     <div className="w-10" />
