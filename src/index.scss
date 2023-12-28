@@ -8,3 +8,7 @@
     @apply mr-1 last:mr-0 p-1 rounded bg-blue-800 text-white text-xs cursor-pointer;
   }
 }
+
+html body {
+  @apply bg-gray-500;
+}
