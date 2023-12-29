@@ -21,8 +21,10 @@
   }
 
   div.video-iframe {
+    @apply overflow-hidden;
     // @apply sepia;
     iframe {
+      @apply scale-[131%] translate-y-12;
       // @apply opacity-50;
       // video {
       //   @apply grayscale-[.15];
