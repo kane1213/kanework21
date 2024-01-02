@@ -24,7 +24,10 @@
     @apply overflow-hidden;
     // @apply sepia;
     iframe {
-      @apply scale-[131%] translate-y-12;
+      // @apply scale-y-125 translate-y-1;
+      // @apply scale-[125%];
+      // @apply scale-x-75;
+      // @apply scale-[131%] translate-y-10;
       // @apply opacity-50;
       // video {
       //   @apply grayscale-[.15];

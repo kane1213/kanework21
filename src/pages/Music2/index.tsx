@@ -187,7 +187,7 @@ export default (props: any) => {
 
   function musicBoxStart () {
     gaspRef.current = gsap.to(notesRef.current, {
-      y: -notesRef.current.height * 1.25,
+      y: -notesRef.current.height * 1,
       duration: notesRef.current.height * DURATION,
       ease: "none",
       // delay: 0.5,
