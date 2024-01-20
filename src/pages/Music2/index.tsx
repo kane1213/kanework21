@@ -52,7 +52,7 @@ export default (props: any) => {
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
   const NOTE_GAP: number = 100
-  const DURATION: number = .1 / 7.5
+  const DURATION: number = .1 / 9
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -140,9 +140,9 @@ export default (props: any) => {
     const base64Data = audioData[text]
     var audio = audioContext.createBufferSource();
     const gainNode = audioContext.createGain();
-    
-    gainNode.gain.value = ([].some((k: string) => k === text)) // 'A3', 'F3', 'D#3', 'G#3', 'C4', 'D#5', 'A#4'
-      ? 0.4 
+    // (['A1', 'E1', 'B1', 'G1','A2', 'E2', 'B2', 'G2', 'E3', 'A3', 'C3', 'G3'].some((k: string) => k === text))
+    gainNode.gain.value = parseInt(text.slice(-1)[0]) <= 3
+      ? 0.7
       : 1
     try {
       // 解碼音樂 base64 字串
@@ -240,7 +240,7 @@ export default (props: any) => {
   
   function playMusicEvent (event: any) {
     console.log("start")
-    copyToClipboard(`【懷舊】 ${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} Music Box`)
+    copyToClipboard(`【懷舊】 ${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} Music Box 引用的影片 https://www.youtube.com/watch?v=${ytId}`)
     
 
     if (!!gaspRef.current) {
