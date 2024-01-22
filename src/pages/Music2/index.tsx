@@ -52,7 +52,7 @@ export default (props: any) => {
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
   const NOTE_GAP: number = 100
-  const DURATION: number = .1 / 9
+  const DURATION: number = .1 / 7.5
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))

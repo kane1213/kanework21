@@ -41,8 +41,8 @@ export default (props: any) => {
 
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
-  const NOTE_GAP: number = 150
-  const DURATION: number = .1 / 12
+  const NOTE_GAP: number = 100
+  const DURATION: number = .1 / 15
   const GEAR_HEIGHT: number = 96
   const GEAR_WIDTH: number = 39
 
