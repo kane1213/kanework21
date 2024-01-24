@@ -310,16 +310,18 @@ export default (props: any) => {
     <Sprite ref={maskRef} width={CANVAS_WIDTH - 70} height={348} texture={Texture.WHITE} x={35}  y={17} tint="0x000000" />
     <Container x={27} y={430}>
       {
-        notekeys.map((key: string, index: number) => <AnimatedSprite 
-          onpointerdown={() => {
-            console.log(key)
-            playAudioByNoteText(key)
-          }}
-          getPlay={(play: any) => {
-            aniContainer.current = { ...aniContainer.current, [key]: play }
-          }}
-          speed={0.25}
-          texture={[stick, stickDark]} key={key} x={ index * 16.5 }  width={stickWidth} height={50 + (200 - Math.abs( (notekeys.length * .5) - index) * 12) }  />)
+        notekeys
+          .filter((key: string) => notekeys.includes(key))
+          .map((key: string, index: number) => <AnimatedSprite 
+            onpointerdown={() => {
+              console.log(key)
+              playAudioByNoteText(key)
+            }}
+            getPlay={(play: any) => {
+              aniContainer.current = { ...aniContainer.current, [key]: play }
+            }}
+            speed={0.25}
+            texture={[stick, stickDark]} key={key} x={ index * 16.5 }  width={stickWidth} height={50 + (200 - Math.abs( (notekeys.length * .5) - index) * 12) }  />)
       }
       
     </Container>
