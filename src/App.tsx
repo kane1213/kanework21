@@ -18,7 +18,7 @@ function AppRoutes() {
     router(`/${name.toLowerCase()}`)
   }
   const showHeader = useMemo<boolean>(() => {
-    return !(location.pathname.includes('music') && location.pathname.split('/').length > 2)
+    return !((location.pathname.includes('music')||location.pathname.includes('kalimba')) && location.pathname.split('/').length > 2)
   }, [location])
 
   return <>

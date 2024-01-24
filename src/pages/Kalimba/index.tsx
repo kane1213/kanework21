@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
-import { Sprite, Stage, Container, TilingSprite, Text } from "react-pixi-fiber";
-import AnimatedSprite from '@/components/AnimationSprite';
-import audioData from '@/lib/box-ogg2.js';
+import { Sprite, Stage, Container, TilingSprite, Text, NineSlicePlane } from "react-pixi-fiber";
+import AnimatedSprite from '@/components/AnimationSpriteNine';
+import audioData from '@/lib/kalimba.js';
 import _ from 'lodash';
 import { Midi } from '@tonejs/midi'
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
@@ -14,8 +14,10 @@ import noteBall from '/public/images/musicbox/noteball.png';
 import kone from '/public/images/musicbox/key1.png';
 import ktwo from '/public/images/musicbox/key2.png';
 import gear from '/public/images/musicbox/gear.png';
-import wheel from '/public/images/musicbox/wheel.png';
-import wood from '/public/images/musicbox/musicBoxWood3.png';
+import bricksframe from '/public/images/kalimba/bricksframe.png';
+import woodConsole from '/public/images/kalimba/console.png';
+import stick from '/public/images/kalimba/stick.png';
+import stickDark from '/public/images/kalimba/stick_dark.png';
 import metal from '/public/images/musicbox/metal.png';
 import pwdBtn from '/public/images/musicbox/powerBtn.png';
 import pad from '/public/images/musicbox/pad.png'
@@ -49,10 +51,10 @@ export default (props: any) => {
     if (query?.repeat) REPEAT = true
   }
 
-  const CANVAS_WIDTH: number = 1280
-  const CANVAS_HEIGHT: number = 720
+  const CANVAS_WIDTH: number = 464
+  const CANVAS_HEIGHT: number = 825
   const NOTE_GAP: number = 100
-  const DURATION: number = .1 / 9
+  const DURATION: number = .1 / 7.5
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -110,6 +112,7 @@ export default (props: any) => {
   const NOTE_SIZE: number = (CANVAS_WIDTH - 281) / kNotes.length - 1
   const gaspRef = useRef<any>();
   const stageRef = createRef<any>();
+  const mainContainer = createRef<any>();
   const notesRef = useRef<any>();
   // const handGearRef = createRef<any>()
   const aniContainer = useRef<any>({});
@@ -229,7 +232,8 @@ export default (props: any) => {
     notesRef.current.y = (CANVAS_HEIGHT * .5 + 5) - parseInt(START_HEIGHT)
     if (chosen.length === 0) return
     const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => {
-      const _newNotes = track.notes.map((note: any) => ({ ...note, name: note.name, time: note.time }))
+      const _newNotes = track.notes.map((note: any) => ({ ...note, name: note.name.replace('#', ''), time: note.time }))
+      console.log({ _newNotes })
       return _newNotes
     })
 
@@ -239,7 +243,7 @@ export default (props: any) => {
   }
   
   function playMusicEvent (event: any) {
-    console.log("start")
+    return
     copyToClipboard(`【懷舊】 ${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} Music Box 引用的影片 https://www.youtube.com/watch?v=${ytId}`)
     
 
@@ -270,20 +274,32 @@ export default (props: any) => {
   }
 
   useEffect(() => {
-    readMidiFile(musicMidi)
+    // readMidiFile(musicMidi)
 
-    wheelRefOne.current.mask = wheelMaskRef.current
-    wheelRefTwo.current.mask = wheelMaskRef.current
+    // wheelRefOne.current.mask = wheelMaskRef.current
+    // wheelRefTwo.current.mask = wheelMaskRef.current
 
-    gsap.to(wheelRefOne.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
-    gsap.to(wheelRefTwo.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
+    // gsap.to(wheelRefOne.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
+    // gsap.to(wheelRefTwo.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
     
-    if (!!ytId) handleVideo()
-    
+    // if (!!ytId) handleVideo()
+    if (mainContainer.current) {
+      setTimeout(() => {
+        const scale: number = CANVAS_WIDTH / mainContainer.current.width
+        console.log({ scale, current: mainContainer.current })
+        // mainContainer.current.scale = scale;
+
+        mainContainer.current.width *= scale
+        mainContainer.current.height *= scale
+
+        // mainContainer.current.x = (CANVAS_WIDTH - mainContainer.current.width) * .5
+        // mainContainer.current.y = (CANVAS_HEIGHT - mainContainer.current.height) * .5
+      }, 0)
+    }
 
   }, [])
   useEffect(() => {
-    if (midiTracks.length > 0) initMusicEvent()
+    // if (midiTracks.length > 0) initMusicEvent()
     
   }, [midiTracks])
 
@@ -312,18 +328,36 @@ export default (props: any) => {
   //   })
   // }
 
+  const notekeys: string[] = Object.keys(audioData)
+  const noteWidth: number = 2
+  const noteHeight: number = 18
+  const stickWidth: number = 25
 
   return <div className={SHOWARROW ? '' : 'cursor-none'}>
-  <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#f7ffd6' }} >
-    <Container x={(CANVAS_WIDTH - 1240) * .5} y={25}>
-      <Sprite width={1240} height={681} texture={Texture.from(wood)} x={0} y={0}  interactive={true} onpointerdown={playMusicEvent}  />
-      <Sprite ref={maskRef} width={1000} height={261} texture={Texture.WHITE} x={121}  y={8} tint="0x000000" />
-      <TilingSprite ref={wheelRefOne} texture={Texture.from(wheel)} width={110} height={350} y={-15} x={11} />
+  <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#fff' }} >
+    <Container ref={mainContainer} x={0} y={0}>
+      <Sprite  texture={Texture.from(woodConsole)} interactive={true} onpointerdown={playMusicEvent}  />
+      <Sprite texture={Texture.from(bricksframe)} y={10} x={15} />
+      {/* <Sprite ref={maskRef} width={1000} height={261} texture={Texture.WHITE} x={121}  y={8} tint="0x000000" />
       <TilingSprite texture={Texture.from(metal)} width={1000} height={260} y={9} x={121} />
       <TilingSprite ref={wheelRefTwo} texture={Texture.from(wheel)} width={110} height={350} y={-15} x={1119} />
       <Sprite ref={wheelMaskRef} width={1260} height={315} texture={Texture.WHITE} x={-9}  y={-15} tint="0x0000ff" />
       <Sprite width={73} height={73} texture={Texture.from(pwdBtn)} x={1120} y={580} />
-      <Sprite texture={Texture.from(logo)} width={154} height={39} x={950} y={600} />
+      <Sprite texture={Texture.from(logo)} width={154} height={39} x={950} y={600} /> */}
+      
+    </Container>
+
+    <Container x={27} y={430}>
+      {
+        notekeys.map((key: string, index: number) => <AnimatedSprite 
+        
+          getPlay={(play: any) => {
+            // aniContainer.current = { ...aniContainer.current, [key]: play }
+          }}
+        
+          texture={[stick, stickDark]} bottomHeight={noteHeight} topHeight={noteHeight} rightWidth={noteWidth} leftWidth={noteWidth} key={key} x={ index * 16.5 }  width={stickWidth} height={50 + (200 - Math.abs( (notekeys.length * .5) - index) * 12) }  />)
+      }
+      
     </Container>
 
     <Container ref={notesRef} x={141}>
@@ -349,21 +383,21 @@ export default (props: any) => {
         })
       }
     </Container>
-    <Container x={141} y={264}>
+    {/* <Container x={141} y={264}>
       {
         kNotes.map((key: string, kIndex: number) => <AnimatedSprite getPlay={(play: any) => {
           aniContainer.current = { ...aniContainer.current, [key]: play }
         }} key={key} speed={90} texture={[kone, ktwo]}  width={NOTE_SIZE} height={90} x={ kIndex * (NOTE_SIZE + 1)} />)
 
       }
-    </Container>
-    <Container x={20} y={333}>
+    </Container> */}
+    {/* <Container x={20} y={333}>
       <Sprite texture={Texture.from(pad)} width={998} height={50} x={121} />
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={124} />
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={604} />
       <Sprite texture={Texture.from(gear)} width={41} height={41}  x={1074} />
       
-    </Container>
+    </Container> */}
 
     
     {/* <Text ref={textTitleRef} text={MUSICBOX_TITLE} style={{ fontSize: 45, fontWeight: 'bold', fill: '#111111', fontFamily: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif' }} y={CANVAS_HEIGHT * .82} />
@@ -375,18 +409,6 @@ export default (props: any) => {
     <div className="sub">{ MUSICBOX_SUBTITLE }</div>
   </div>
   
-  <div className={`video-frame ${VIDEO_WIDTH > 300 ? 'wide':''}`}>
-    <div className="gapside w-10">
-      <div className="text-center flex items-center flex-col">
-        <div className="light" />
-        <div className="text-xs text-white">pwr</div>
-      </div>
-    </div>
-    <div className="overflow-y-hidden video-iframe">
-      <div id="video-player" />
-    </div>
-    <div className="w-10" />
-  </div>
 
   {/* /music/m0894_01/0,3,5 */}
   </div>

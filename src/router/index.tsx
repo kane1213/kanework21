@@ -26,6 +26,7 @@ const routes = [
   { path: '/music', key: 'music', ele: lazy(() => import('@/pages/Music/list')), children: [] },
   { path: '/music/:name/:chosens', key: 'music', ele: lazy(() => import('@/pages/Music')), children: [] },
   { path: '/music2/:name/:chosens', key: 'music', ele: lazy(() => import('@/pages/Music2')), children: [] },
+  { path: '/kalimba/:name/:chosens', key: 'music', ele: lazy(() => import('@/pages/Kalimba')), children: [] },
 
   { path: '/miss', key: 'miss', ele: lazy(() => import('@/pages/Miss')), children: [] },
 
