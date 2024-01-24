@@ -1,6 +1,6 @@
 import { Texture, AnimatedSprite } from "pixi.js";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { Container, NineSlicePlane } from "react-pixi-fiber";
+import { Container } from "react-pixi-fiber";
 
 
 export default forwardRef((props: { texture: any[], speed?: number, x: number, y: number, width: number, height: number, bottomHeight: number, topHeight: number, leftWidth: number, rightWidth: number , getPlay: any }, ref) => {

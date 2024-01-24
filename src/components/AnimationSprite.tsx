@@ -3,7 +3,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { Container } from "react-pixi-fiber";
 
 
-export default forwardRef((props: { texture: any[], speed?: number, x: number, y: number, width: number, height: number, getPlay: any }, ref) => {
+export default forwardRef((props: { texture: any[], speed?: number, x: number, y: number, width: number, height: number, getPlay: any, onpointerdown?: Function }, ref) => {
   const spriteRef = useRef<any>()
   const sprites = new AnimatedSprite(
     props.texture.map((graphic: any) => Texture.from(graphic)))
@@ -16,9 +16,11 @@ export default forwardRef((props: { texture: any[], speed?: number, x: number, y
       sprites.onLoop = () => {
         sprites.gotoAndStop(0)
       }
+      
       spriteRef.current.addChild(sprites)
 
       props.getPlay(() => {
+        
         sprites.play()
       })
   }, [])
@@ -27,5 +29,7 @@ export default forwardRef((props: { texture: any[], speed?: number, x: number, y
     play: () => {sprites.play()},
   }));
 
-  return <Container ref={spriteRef} x={props.x || 0} y={props.y || 0} width={props.width || 0} height={props.height || 0} />
+  return <Container interactive={true} onclick={() => { 
+    props.onpointerdown && props.onpointerdown()
+  }} ref={spriteRef} x={props.x || 0} y={props.y || 0} width={props.width || 0} height={props.height || 0} />
 })
