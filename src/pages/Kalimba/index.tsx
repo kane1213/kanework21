@@ -48,10 +48,12 @@ export default (props: any) => {
     if (query?.repeat) REPEAT = true
   }
 
-  const CANVAS_WIDTH: number = 464
-  const CANVAS_HEIGHT: number = 825
-  const NOTE_GAP: number = 100
-  const DURATION: number = .1 / 7.5
+  
+
+  const CANVAS_WIDTH: number = 555
+  const CANVAS_HEIGHT: number = CANVAS_WIDTH * 1.7780
+  const NOTE_GAP: number = 130
+  const DURATION: number = .1 / 6
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -81,7 +83,6 @@ export default (props: any) => {
     8: ['C', 'D'],
   }
 
-  const kNotes: string[] = Object.entries(keyboards).reduce((sum: any, kbs: any) => sum.concat(kbs[1].map((k: string) => k + kbs[0])) , [])
   const noteNameGroup = useMemo(() => {
     if (notes.length === 0) return {}
 
@@ -102,11 +103,9 @@ export default (props: any) => {
       return sum
     }, {})
     return _notes
-
-
   }, [notes])
 
-  const NOTE_SIZE: number = 14
+  const NOTE_SIZE: number = 23
   const gaspRef = useRef<any>();
   const stageRef = createRef<any>();
   const mainContainer = createRef<any>();
@@ -116,8 +115,12 @@ export default (props: any) => {
   const finishNotes = useRef<any>([]);
   const process = createRef<number>();
 
+  const notePosition = { 'D5': 0,  'B4': 1,  'G4': 2,  'E4': 3,  'C4': 4,  'A3': 5,  'F3': 6,  'D3': 7,  'C3': 8,  'E3': 9,  'G3': 10,  'B3': 11,  'D4': 12,  'F4': 13,  'A4': 14,  'C5': 15,  'E5': 16,}
+  // const notePosition = { 'D6': 0,  B5: 1,  G5: 2,  E5: 3,  C5: 4,  A4: 5,  F4: 6,  D4: 7,  C4: 8,  E4: 9,  G4: 10,  B4: 11,  D5: 12,  F5: 13,  A5: 14,  C6: 15,  E6: 16,}
+
   function playAudioByNoteText (text: string) {
     if (!text) return
+    // console.log({ text })
     playAudio(text, 0, 1.5)
     aniContainer.current[text]()
   }
@@ -181,9 +184,9 @@ export default (props: any) => {
   }
 
   function musicBoxStart () {
-
+    
     gaspRef.current = gsap.to(notesRef.current, {
-      y: 0,
+      y: notesRef.current.height * 1.8,
       duration: notesRef.current.height * DURATION,
       ease: "none",
       // delay: 0.5,
@@ -195,7 +198,7 @@ export default (props: any) => {
         const equalZeroSprite = notesRef.current.children
           .filter((child: any) => !finishNotes.current.includes(child))
           .filter((child: any, index: number) => {
-            return Math.floor(notesRef.current.height + currentY) - child.y > 370
+            return Math.floor(currentY + child.y) > 390
           })
         if (equalZeroSprite.length > 0) {
           finishNotes.current = finishNotes.current.concat(equalZeroSprite)
@@ -206,7 +209,8 @@ export default (props: any) => {
         }
       },
       onComplete() {
-        notesRef.current.y = (CANVAS_HEIGHT * .5 + 5) - parseInt(START_HEIGHT)
+        // alert("DONE")
+        notesRef.current.y = 0
         finishNotes.current = []
         if (REPEAT) musicBoxStart()
       }
@@ -229,7 +233,8 @@ export default (props: any) => {
       const _newNotes = track.notes.map((note: any) => ({ ...note, name: note.name.replace('#', ''), time: note.time }))
       return _newNotes
     })
-    notesRef.current.y = -_notes.slice(-1)[0].time * NOTE_GAP
+    // notesRef.current.y = -_notes.slice(-1)[0].time * NOTE_GAP
+    notesRef.current.y = 350
     notesRef.current.mask = maskRef.current;
     const _noteList = _notes.slice()
     setNotes(_noteList)
@@ -295,9 +300,10 @@ export default (props: any) => {
     
   }, [midiTracks])
 
- 
-  const notekeys: string[] = Object.keys(audioData).filter((k: string)=>!k.includes('6'))
-  const stickWidth: number = 20
+  const excludes: string[] = ["A5", "B5", "F5", "G5", "C6", "D6", "E6"]
+  // const excludes: string[] = ["A6", "B6", "F6", "G6", 'A3', 'B3', 'F3', 'G3', "C3", "D3", "E3"]
+  const notekeys: string[] = Object.keys(audioData).filter((k: string)=> !excludes.includes(k))
+  const stickWidth: number = 30
   const cubes = [cb, cr, cy]
 
   return <div className={SHOWARROW ? '' : 'cursor-none'}>
@@ -307,47 +313,57 @@ export default (props: any) => {
       <Sprite texture={Texture.from(bricksframe)} y={10} x={15} />
     </Container>
 
-    <Sprite ref={maskRef} width={CANVAS_WIDTH - 70} height={348} texture={Texture.WHITE} x={35}  y={17} tint="0x000000" />
-    <Container x={27} y={430}>
+    <Sprite ref={maskRef} width={CANVAS_WIDTH - 70} height={418} texture={Texture.WHITE} x={35}  y={20} tint="0x000000" />
+    <Container x={38} y={512}>
       {
         notekeys
-          .filter((key: string) => notekeys.includes(key))
           .map((key: string, index: number) => <AnimatedSprite 
             onpointerdown={() => {
               console.log(key)
               playAudioByNoteText(key)
             }}
             getPlay={(play: any) => {
+              console.log(key)
               aniContainer.current = { ...aniContainer.current, [key]: play }
             }}
-            speed={0.25}
-            texture={[stick, stickDark]} key={key} x={ index * 16.5 }  width={stickWidth} height={50 + (200 - Math.abs( (notekeys.length * .5) - index) * 12) }  />)
+            speed={0.15}
+            texture={[stick, stickDark]} key={key} x={ notePosition[key] * (stickWidth - 2) }  width={stickWidth} height={40 + (200 - Math.abs( Math.floor(notekeys.length * .5) - notePosition[key]) * 12) }  />)
       }
-      
     </Container>
 
-    <Container ref={notesRef} x={30}>
+    <Container ref={notesRef} x={38}>
       {
-        ...Object.entries(noteNameGroup).filter(([_, notes]: any) => notes.length > 0).map(( [key, notes]: any, notesIndex: number): any => {
-          return notes.map((note: any, noteIndex: number) => {
-            
-
-            return <Sprite alt={key} eventMode="dynamic" onclick={(event: any) => {
-                if (event.ctrlKey) {
-                  const { midi, time } = note
-                  hideNotes.push({ midi, time})
-                  localStorage.setItem('hideNotes', JSON.stringify(hideNotes))
-                  setNotes((_notes: any) => _notes.filter((_note: any) => _note !== note) )
-                } else {
-                  playAudioByNoteText(key)
+        ...Object.entries(noteNameGroup)
+          .filter(([_, notes]: any) => notes.length > 0)
+          .filter(( [key]: any) => notekeys.includes(key))
+          .map(( [key, notes]: any, notesIndex: number): any => {
+            return notes.map((note: any, noteIndex: number) => {
+              
+              return <Sprite alt={key} eventMode="dynamic" onclick={(event: any) => {
+                  if (event.ctrlKey) {
+                    const { midi, time } = note
+                    hideNotes.push({ midi, time})
+                    localStorage.setItem('hideNotes', JSON.stringify(hideNotes))
+                    setNotes((_notes: any) => _notes.filter((_note: any) => _note !== note) )
+                  } else {
+                    playAudioByNoteText(key)
+                  }
                 }
-              }
-              }  texture={Texture.from(cubes[Math.floor(3 * Math.random())])} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={notekeys.findIndex((k: string) => k === key) * NOTE_SIZE} y={note.time * NOTE_GAP} zIndex={noteIndex}>  
-              {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
-            </Sprite>
-          })
+                }  texture={Texture.from(cubes[Math.floor(cubes.length * Math.random())])} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={notePosition[key] * (stickWidth -2) + 4} y={note.time * -NOTE_GAP} zIndex={noteIndex}>  
+                {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
+              </Sprite>
+            })
         })
       }
+    </Container>
+    <Container x={42} y={416}>
+      {
+        notekeys
+          .map((key: string, index: number) => <Sprite width={NOTE_SIZE} height={NOTE_SIZE} texture={Texture.WHITE} x={notePosition[key] * NOTE_SIZE * 1.218 }  y={0} tint="0xEEEEEE">
+            <Text x={0} y={2}  style={{ fill: '#000000', fontSize: 11, align: 'center' }} text={key} /> 
+          </Sprite>)
+      }
+
     </Container>
   </Stage>
 
