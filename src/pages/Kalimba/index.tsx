@@ -14,7 +14,7 @@ import { useLocation } from "react-router-dom";
 
 import bricksframe from '/public/images/kalimba/bricksframe.png';
 import woodConsole from '/public/images/kalimba/console.png';
-import stick from '/public/images/kalimba/stick1.png';
+import stick from '/public/images/kalimba/stick.png';
 import stickDark from '/public/images/kalimba/stick1_d.png';
 
 import cb from '/public/images/kalimba/blue.png';
@@ -53,7 +53,7 @@ export default (props: any) => {
   const CANVAS_WIDTH: number = 555
   const CANVAS_HEIGHT: number = CANVAS_WIDTH * 1.7780
   const NOTE_GAP: number = 130
-  const DURATION: number = .1 / 6
+  const DURATION: number = .1 / 9
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -307,7 +307,7 @@ export default (props: any) => {
   const cubes = [cb, cr, cy]
 
   return <div className={SHOWARROW ? '' : 'cursor-none'}>
-  <Stage ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#fff' }} >
+  <Stage className="mt-4 ml-3" ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#fff' }} >
     <Container ref={mainContainer} x={0} y={0}>
       <Sprite  texture={Texture.from(woodConsole)} interactive={true} onpointerdown={playMusicEvent}  />
       <Sprite texture={Texture.from(bricksframe)} y={10} x={15} />
@@ -337,8 +337,18 @@ export default (props: any) => {
           .filter(([_, notes]: any) => notes.length > 0)
           .filter(( [key]: any) => notekeys.includes(key))
           .map(( [key, notes]: any, notesIndex: number): any => {
-            return notes.map((note: any, noteIndex: number) => {
+            return notes
+              .filter((note: any) => note.time < 46)
+              .map((note: any, noteIndex: number) => {
+                const adj = note.time > 47.9
+                  ? 3.4
+                  : note.time > 21
+                    ? 2.4
+                    : note.time > 8.2
+                      ? .75
+                      : 0
               
+        
               return <Sprite alt={key} eventMode="dynamic" onclick={(event: any) => {
                   if (event.ctrlKey) {
                     const { midi, time } = note
@@ -346,10 +356,11 @@ export default (props: any) => {
                     localStorage.setItem('hideNotes', JSON.stringify(hideNotes))
                     setNotes((_notes: any) => _notes.filter((_note: any) => _note !== note) )
                   } else {
+                    console.log({ note })
                     playAudioByNoteText(key)
                   }
                 }
-                }  texture={Texture.from(cubes[Math.floor(cubes.length * Math.random())])} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={notePosition[key] * (stickWidth -2) + 4} y={note.time * -NOTE_GAP} zIndex={noteIndex}>  
+                }  texture={Texture.from(cubes[Math.floor(cubes.length * Math.random())])} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={notePosition[key] * (stickWidth -2) + 4} y={(note.time - adj) * -NOTE_GAP} zIndex={noteIndex}>  
                 {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
               </Sprite>
             })

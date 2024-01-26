@@ -49,21 +49,20 @@
 }
 
 .text-frame {
-  @apply fixed left-[580px] top-[450px];
-  &.wide {
-    @apply left-[610px];
-  }
+  width: calc(100vw - 110px);
+  @apply fixed left-14 top-9 bg-gradient-to-b from-black via-black/80 to-transparent pt-2 pb-5;
+
   > div {
     @apply max-w-[600px] w-full ;
   }
   .title {
-    @apply text-[60px] font-bold text-black/70 drop-shadow-md leading-[48px];
+    @apply text-[35px] font-bold text-white/70 leading-[35px] text-center;
     text-shadow: #ffffff6d 0 1px;
     font-Family: '"vt323", "Fjalla One", "Source Sans Pro" "Handwriting"';
     src: url('/public/ttf/VT323-Regular.ttf');
   }
   .sub {
-    @apply text-3xl font-bold  text-gray-900 mt-3;
+    @apply text-[21px]  text-white mt-0 text-center;
     font-family: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif';
     text-shadow: #ffffff6d 0 1px;
   }

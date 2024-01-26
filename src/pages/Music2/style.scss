@@ -17,7 +17,7 @@
   }
   iframe {
     // @apply scale-[132%];
-    opacity: 0.75;
+    // opacity: 0.75;
     
   }
 
@@ -25,7 +25,7 @@
     @apply relative;
     &::before {
       content: '';
-      @apply absolute left-0 top-0 bottom-0 right-0 z-10 opacity-70;
+      @apply absolute left-0 top-0 bottom-0 right-0 z-10 opacity-50;
       background: transparent url(/public/images/dotg.png);
       pointer-events: none;
 
@@ -34,7 +34,7 @@
     // @apply sepia;
     iframe {
       // @apply scale-y-125 translate-y-1;
-      @apply scale-[150%];
+      // @apply scale-[150%];
       // @apply scale-x-75;
       // @apply scale-[131%] translate-y-10;
       // @apply opacity-50;
