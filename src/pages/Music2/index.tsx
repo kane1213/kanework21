@@ -41,6 +41,7 @@ export default (props: any) => {
     if (query.hasOwnProperty('wide')) VIDEO_WIDTH = 420
     
     forbidNote = query?.forbid ? query.forbid.replaceAll('%23', '#').split(',') : []
+    console.log({ forbidNote})
     MUSICBOX_TITLE = query.title ? decodeURI(query.title) : ''
     MUSICBOX_SUBTITLE = query.subtitle ? decodeURI(query.subtitle) : ''
     if (query?.start) START_HEIGHT = query.start

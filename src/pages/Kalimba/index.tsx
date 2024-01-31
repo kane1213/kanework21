@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
-import { Sprite, Stage, Container, TilingSprite, Text, NineSlicePlane } from "react-pixi-fiber";
+import { Sprite, Stage, Container, Text } from "react-pixi-fiber";
 import AnimatedSprite from '@/components/AnimationSprite';
 import audioData from '@/lib/kalimba.js';
 import _ from 'lodash';
@@ -7,15 +7,15 @@ import { Midi } from '@tonejs/midi'
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 import gsap from "gsap";
 gsap.registerPlugin(MotionPathPlugin);
-// import _ from 'lodash'
 import { Texture } from "pixi.js";
 import { useLocation } from "react-router-dom";
-// import noteBall from '/public/images/musicbox/noteball.png';
 
 import bricksframe from '/public/images/kalimba/bricksframe.png';
 import woodConsole from '/public/images/kalimba/console.png';
-import stick from '/public/images/kalimba/stick.png';
-import stickDark from '/public/images/kalimba/stick1_d.png';
+import stick from '/public/images/kalimba/stick_w.png';
+import middleStick from '/public/images/kalimba/middleStick.png';
+import stickDark from '/public/images/kalimba/stick_wb.png';
+import stickTop from '/public/images/kalimba/stick_t.png';
 
 import cb from '/public/images/kalimba/blue.png';
 import cy from '/public/images/kalimba/yellow.png';
@@ -24,13 +24,13 @@ import cr from '/public/images/kalimba/red.png';
 import './style.scss'
 export default (props: any) => {
 
-  let VIDEO_WIDTH: number = 300
   let MUSICBOX_TITLE: string = ''
   let MUSICBOX_SUBTITLE: string = ''
   let forbidNote: string[] = []
   let START_HEIGHT = 0
   let REPEAT = false
   let SHOWARROW = false
+  
 
   if (!!window.location.search) {
     const query = window.location.search.replace('?', '').split('&').reduce((sum: any, str: string) => {
@@ -39,7 +39,10 @@ export default (props: any) => {
     }, {})
     if (query.hasOwnProperty('wide')) VIDEO_WIDTH = 420
     
-    forbidNote = query?.forbid ? query.forbid.replaceAll('%23', '#').split(',') : []
+    forbidNote = query?.forbid ? decodeURI(query.forbid).split(',') : []
+
+
+    // console.log(forbidNote)
     MUSICBOX_TITLE = query.title ? decodeURI(query.title) : ''
     MUSICBOX_SUBTITLE = query.subtitle ? decodeURI(query.subtitle) : ''
     if (query?.start) START_HEIGHT = query.start
@@ -52,9 +55,9 @@ export default (props: any) => {
 
   const CANVAS_WIDTH: number = 555
   const CANVAS_HEIGHT: number = CANVAS_WIDTH * 1.7780
-  const NOTE_GAP: number = 130
+  const NOTE_GAP: number = 200
   const DURATION: number = .1 / 9
-
+  const TEXT_WIDTH = 474
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
   const [chosen, setChosen] = useState<number[]>(chosens.split(',').map((val: string) => parseInt(val)) || [])
@@ -66,7 +69,17 @@ export default (props: any) => {
     ? JSON.parse(localStorage.getItem('hideNotes'))
     : []
   
-  let player = useRef<any>()
+  
+  const gaspRef = useRef<any>();
+  const stageRef = createRef<any>();
+  const mainContainer = createRef<any>();
+  const notesRef = useRef<any>();
+  const aniContainer = useRef<any>({});
+  const maskRef = createRef<any>();
+  const finishNotes = useRef<any>([]);
+  const process = createRef<number>();
+
+  
   // const [audios, setAudios] = useState<HTMLAudioElement[]>()
 
   // const noteTimes = useMemo(() => notes.length > 0 ? _.uniq(_.map(notes, 'time')) : [], [notes])
@@ -105,18 +118,17 @@ export default (props: any) => {
     return _notes
   }, [notes])
 
-  const NOTE_SIZE: number = 23
-  const gaspRef = useRef<any>();
-  const stageRef = createRef<any>();
-  const mainContainer = createRef<any>();
-  const notesRef = useRef<any>();
-  const aniContainer = useRef<any>({});
-  const maskRef = createRef<any>();
-  const finishNotes = useRef<any>([]);
-  const process = createRef<number>();
+  
 
-  const notePosition = { 'D5': 0,  'B4': 1,  'G4': 2,  'E4': 3,  'C4': 4,  'A3': 5,  'F3': 6,  'D3': 7,  'C3': 8,  'E3': 9,  'G3': 10,  'B3': 11,  'D4': 12,  'F4': 13,  'A4': 14,  'C5': 15,  'E5': 16,}
+  const notePosition = ['A5','F5','D5', 'B4', 'G4', 'E4', 'C4', 'A3', 'F3', 'D3', 'C3', 'E3', 'G3', 'B3', 'D4', 'F4', 'A4', 'C5', 'E5','G5','B5']
+    .reduce((sum: { [k: string]: number }, text: string, index: number) => ({ ...sum, [text]: index }), {})
   // const notePosition = { 'D6': 0,  B5: 1,  G5: 2,  E5: 3,  C5: 4,  A4: 5,  F4: 6,  D4: 7,  C4: 8,  E4: 9,  G4: 10,  B4: 11,  D5: 12,  F5: 13,  A5: 14,  C6: 15,  E6: 16,}
+
+  const noteNumber: number = Object.keys(notePosition).length
+
+  const NOTE_SIZE: number = TEXT_WIDTH / (noteNumber + 3.5)
+  const stickWidth: number = TEXT_WIDTH / (noteNumber + 3.5)
+
 
   function playAudioByNoteText (text: string) {
     if (!text) return
@@ -300,10 +312,9 @@ export default (props: any) => {
     
   }, [midiTracks])
 
-  const excludes: string[] = ["A5", "B5", "F5", "G5", "C6", "D6", "E6"]
+  const excludes: string[] = [ "C6", "D6", "E6"] // "A5", "B5", "F5", "G5",
   // const excludes: string[] = ["A6", "B6", "F6", "G6", 'A3', 'B3', 'F3', 'G3', "C3", "D3", "E3"]
-  const notekeys: string[] = Object.keys(audioData).filter((k: string)=> !excludes.includes(k))
-  const stickWidth: number = 30
+  const notekeys: string[] = Object.keys(audioData).filter((k: string)=> !excludes.includes(k)) 
   const cubes = [cb, cr, cy]
 
   return <div className={SHOWARROW ? '' : 'cursor-none'}>
@@ -314,20 +325,34 @@ export default (props: any) => {
     </Container>
 
     <Sprite ref={maskRef} width={CANVAS_WIDTH - 70} height={418} texture={Texture.WHITE} x={35}  y={20} tint="0x000000" />
+
+    <Sprite texture={Texture.from(middleStick)}  y={475} x={25} width={510} height={25} />
+
     <Container x={38} y={512}>
       {
         notekeys
-          .map((key: string, index: number) => <AnimatedSprite 
-            onpointerdown={() => {
-              console.log(key)
-              playAudioByNoteText(key)
-            }}
-            getPlay={(play: any) => {
-              console.log(key)
-              aniContainer.current = { ...aniContainer.current, [key]: play }
-            }}
-            speed={0.15}
-            texture={[stick, stickDark]} key={key} x={ notePosition[key] * (stickWidth - 2) }  width={stickWidth} height={40 + (200 - Math.abs( Math.floor(notekeys.length * .5) - notePosition[key]) * 12) }  />)
+          .map((key: string, index: number) => <>
+            <Sprite width={stickWidth} height={stickWidth * .75} texture={Texture.WHITE} x={ index * (TEXT_WIDTH / Object.keys(notePosition).length) }  y={-15} tint="0x000000" />
+
+            
+            <Sprite width={stickWidth}  texture={Texture.from(stickTop)} x={ index * (TEXT_WIDTH / Object.keys(notePosition).length) }  y={-70} />
+            <AnimatedSprite 
+              onpointerdown={() => {
+                console.log(key)
+                playAudioByNoteText(key)
+              }}
+              getPlay={(play: any) => {
+                console.log(key)
+                aniContainer.current = { ...aniContainer.current, [key]: play }
+              }}
+              speed={0.15}
+              texture={[stick, stickDark]} key={key} x={ notePosition[key] * (TEXT_WIDTH / Object.keys(notePosition).length)}  width={stickWidth} height={40 + (200 - Math.abs( Math.floor(notekeys.length * .5) - notePosition[key]) * 12) }  />
+
+
+
+          </>)
+          
+          
       }
     </Container>
 
@@ -340,13 +365,14 @@ export default (props: any) => {
             return notes
               .filter((note: any) => note.time < 46)
               .map((note: any, noteIndex: number) => {
-                const adj = note.time > 47.9
-                  ? 3.4
-                  : note.time > 21
-                    ? 2.4
-                    : note.time > 8.2
-                      ? .75
-                      : 0
+                // const adj = note.time > 47.9
+                //   ? 3.4
+                //   : note.time > 21
+                //     ? 2.4
+                //     : note.time > 8.2
+                //       ? .75
+                //       : 0
+                const adj = 0
               
         
               return <Sprite alt={key} eventMode="dynamic" onclick={(event: any) => {
@@ -360,17 +386,19 @@ export default (props: any) => {
                     playAudioByNoteText(key)
                   }
                 }
-                }  texture={Texture.from(cubes[Math.floor(cubes.length * Math.random())])} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={notePosition[key] * (stickWidth -2) + 4} y={(note.time - adj) * -NOTE_GAP} zIndex={noteIndex}>  
+                }  texture={Texture.from(cubes[Math.floor(cubes.length * Math.random())])} key={key + '-' + notesIndex + '-' + noteIndex} width={NOTE_SIZE} height={NOTE_SIZE}  x={notePosition[key]  * (TEXT_WIDTH / Object.keys(notePosition).length) + 4} y={(note.time - adj) * -NOTE_GAP} zIndex={noteIndex}>  
                 {/* <Text x={1} y={3}  style={{ fill: '#ffffff', fontSize: 8, align: 'center' }} text={key} /> */}
               </Sprite>
             })
         })
       }
     </Container>
-    <Container x={42} y={416}>
+
+    {/* 符號 */}
+    <Container x={42} y={418}> 
       {
         notekeys
-          .map((key: string, index: number) => <Sprite width={NOTE_SIZE} height={NOTE_SIZE} texture={Texture.WHITE} x={notePosition[key] * NOTE_SIZE * 1.218 }  y={0} tint="0xEEEEEE">
+          .map((key: string, index: number) => <Sprite width={NOTE_SIZE} height={NOTE_SIZE} texture={Texture.WHITE} x={notePosition[key] * (TEXT_WIDTH / Object.keys(notePosition).length) }  y={0} tint="0xEEEEEE">
             <Text x={0} y={2}  style={{ fill: '#000000', fontSize: 11, align: 'center' }} text={key} /> 
           </Sprite>)
       }
@@ -378,7 +406,7 @@ export default (props: any) => {
     </Container>
   </Stage>
 
-  <div className={`text-frame ${VIDEO_WIDTH > 300 ? 'wide':''}`}>
+  <div className="text-frame">
     <div className="title">{ MUSICBOX_TITLE }</div>
     <div className="sub">{ MUSICBOX_SUBTITLE }</div>
   </div>

@@ -48,9 +48,9 @@ export default () => {
   MUSIC LIST
   {/* <div>{ noteTimes.map((time: number) => <div>{time}</div>) }</div> */}
 
-  <div className="mt-3 flex items-center">
+  <div className="mt-3 flex items-center flex-wrap">
     {
-      musics.map((music: string, index: number) => <div onClick={() => { chosenMusicEvent(music) }} className={`${musicMidi === music ? 'bg-red-800 text-white': 'border'} px-1 rounded mx-1 cursor-pointer `} key={music + '-' + index}>{ music }</div>)
+      musics.map((music: string, index: number) => <div onClick={() => { chosenMusicEvent(music) }} className={`${musicMidi === music ? 'bg-red-800 text-white': 'border'} px-1 rounded mx-1 mb-2 cursor-pointer `} key={music + '-' + index}>{ music }</div>)
     }
   </div>
   
