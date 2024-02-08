@@ -67,3 +67,28 @@
     text-shadow: #ffffff6d 0 1px;
   }
 }
+
+.note-4, .note-5, .note-6 {
+  @apply relative;
+  &::before {
+      @apply absolute left-1/2 -translate-x-3 -top-2;
+  }
+}
+
+.note-4 {
+  &::before {
+    content: '⠂';
+  }
+}
+
+.note-5 {
+  &::before {
+    content: '⠃';
+  }
+}
+
+.note-6 {
+  &::before {
+    content: '⠇';
+  }
+}

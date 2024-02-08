@@ -1,6 +1,8 @@
 import { useEffect, useState, useMemo, useRef, createRef } from "react";
 import { Sprite, Stage, Container, Text } from "react-pixi-fiber";
+// import { AdjustmentFilter } from '@pixi/filter-adjustment';
 import AnimatedSprite from '@/components/AnimationSprite';
+import AnimatedSwitch from '@/components/AnimationSwitch';
 import audioData from '@/lib/kalimba.js';
 import _ from 'lodash';
 import { Midi } from '@tonejs/midi'
@@ -9,6 +11,7 @@ import gsap from "gsap";
 gsap.registerPlugin(MotionPathPlugin);
 import { Texture } from "pixi.js";
 import { useLocation } from "react-router-dom";
+import Sheet from './notesheet'
 
 import bricksframe from '/public/images/kalimba/bricksframe.png';
 import woodConsole from '/public/images/kalimba/console.png';
@@ -21,6 +24,12 @@ import cb from '/public/images/kalimba/blue.png';
 import cy from '/public/images/kalimba/yellow.png';
 import cr from '/public/images/kalimba/red.png';
 
+import nfb from '/public/images/kalimba/notef_b.png';
+import nfr from '/public/images/kalimba/notef_r.png';
+import nfg from '/public/images/kalimba/notef_g.png';
+import nfn from '/public/images/kalimba/notef_w.png';
+import bgimgs from './bgimgs'
+
 import './style.scss'
 export default (props: any) => {
 
@@ -30,14 +39,12 @@ export default (props: any) => {
   let START_HEIGHT = 0
   let REPEAT = false
   let SHOWARROW = false
-  
 
   if (!!window.location.search) {
     const query = window.location.search.replace('?', '').split('&').reduce((sum: any, str: string) => {
       const [key, value] = str.split('=')
       return ({ ...sum, [key]: value})
     }, {})
-    if (query.hasOwnProperty('wide')) VIDEO_WIDTH = 420
     
     forbidNote = query?.forbid ? decodeURI(query.forbid).split(',') : []
 
@@ -56,7 +63,7 @@ export default (props: any) => {
   const CANVAS_WIDTH: number = 555
   const CANVAS_HEIGHT: number = CANVAS_WIDTH * 1.7780
   const NOTE_GAP: number = 200
-  const DURATION: number = .1 / 9
+  const DURATION: number = .1 / 10.5
   const TEXT_WIDTH = 474
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -76,9 +83,12 @@ export default (props: any) => {
   const notesRef = useRef<any>();
   const aniContainer = useRef<any>({});
   const maskRef = createRef<any>();
+  const switchRef = createRef<any>()
   const finishNotes = useRef<any>([]);
   const process = createRef<number>();
-
+  const noteSheetRef = createRef<any>();
+  const chunkNotesRef = createRef<any>();
+  
   
   // const [audios, setAudios] = useState<HTMLAudioElement[]>()
 
@@ -120,7 +130,7 @@ export default (props: any) => {
 
   
 
-  const notePosition = ['A5','F5','D5', 'B4', 'G4', 'E4', 'C4', 'A3', 'F3', 'D3', 'C3', 'E3', 'G3', 'B3', 'D4', 'F4', 'A4', 'C5', 'E5','G5','B5']
+  const notePosition = ['E6', 'C6', 'A5','F5','D5', 'B4', 'G4', 'E4', 'C4', 'A3', 'F3', 'D3', 'C3', 'E3', 'G3', 'B3', 'D4', 'F4', 'A4', 'C5', 'E5','G5','B5', 'D6']
     .reduce((sum: { [k: string]: number }, text: string, index: number) => ({ ...sum, [text]: index }), {})
   // const notePosition = { 'D6': 0,  B5: 1,  G5: 2,  E5: 3,  C5: 4,  A4: 5,  F4: 6,  D4: 7,  C4: 8,  E4: 9,  G4: 10,  B4: 11,  D5: 12,  F5: 13,  A5: 14,  C6: 15,  E6: 16,}
 
@@ -135,6 +145,10 @@ export default (props: any) => {
     // console.log({ text })
     playAudio(text, 0, 1.5)
     aniContainer.current[text]()
+    aniContainer.current['n' + text]()
+
+
+    
   }
 
   function copyToClipboard(text: string) {
@@ -195,7 +209,15 @@ export default (props: any) => {
     setTracks(_tracks)
   }
 
+  function chunkNoteEvent () {
+    const _notes = _.orderBy(notesRef.current.children, (note: any) => note.y, 'desc')
+    const _groupNotes = _.groupBy(_notes, (note: any) => Math.floor(note.y / 10))
+    return _.chunk(Object.values(_groupNotes), 10)
+  }
+
+
   function musicBoxStart () {
+    let curIdx: number = -1
     
     gaspRef.current = gsap.to(notesRef.current, {
       y: notesRef.current.height * 1.8,
@@ -206,6 +228,7 @@ export default (props: any) => {
         finishNotes.current = []
       },
       onUpdate() {
+        
         const currentY = Math.floor(notesRef.current.y)
         const equalZeroSprite = notesRef.current.children
           .filter((child: any) => !finishNotes.current.includes(child))
@@ -217,7 +240,23 @@ export default (props: any) => {
           equalZeroSprite.forEach((sprite: any) => {{
             playAudioByNoteText(sprite.alt);
           }})
-          showProcess(notesRef.current.height, notesRef.current.y)
+
+          const _sprite = _.get(equalZeroSprite, [0])
+          
+          const _chunkNote = chunkNotesRef.current.find((list: any) => {
+            return list.flat().some((_s: any, idx: number) => {
+              // curIdx = idx
+              if (_s === _sprite) {
+                return true
+              }
+              return false
+            })
+          })
+          curIdx += 1
+          noteSheetRef.current.callvalue(_chunkNote?.map((note: any) => note.map((n) => n.alt).join()), curIdx)
+
+
+          showProcess(notesRef.current.height * 1.8, notesRef.current.y)
         }
       },
       onComplete() {
@@ -242,15 +281,41 @@ export default (props: any) => {
     if (chosen.length === 0) return
 
     const _notes: any = midiTracks.filter((_: any, index: number) => chosen.includes(index)).flatMap((track: any) => {
-      const _newNotes = track.notes.map((note: any) => ({ ...note, name: note.name.replace('#', ''), time: note.time }))
+
+      
+      const _newNotes = track.notes.map((note: any) => {
+        // const time = Math.floor(note.time) + (note.time % 1 > 0 ? 0.5:0)
+        return ({ ...note, name: note.name.replace('#', ''), time: note.time })
+      }
+      
+      
+      )
       return _newNotes
     })
     // notesRef.current.y = -_notes.slice(-1)[0].time * NOTE_GAP
-    notesRef.current.y = 350
+    notesRef.current.y = 360
     notesRef.current.mask = maskRef.current;
     const _noteList = _notes.slice()
     setNotes(_noteList)
     
+  }
+
+  useEffect(() => {
+
+    chunkNotesRef.current = chunkNoteEvent()
+    // console.log(_chunkNotes[0]?.map((note) => note.map((n) => n.alt).join()))
+    const noteList = chunkNotesRef.current[0]?.map((note) => note.map((n) => n.alt).join())
+    if (!noteList) return
+    noteSheetRef.current.callvalue(noteList, -1)
+    // console.log(noteSheetRef.current)
+    // noteSheetRef.current.callvalue()
+
+  }, [notes])
+
+  function onWheelEvent (evt: any) {
+    const volume: number = 10
+
+    notesRef.current.y += (evt.deltaY > 0 ? 1:-1) * volume
   }
   
   function playMusicEvent (event: any) {
@@ -260,8 +325,9 @@ export default (props: any) => {
         
         
         if (event.ctrlKey) {
-          notesRef.current.y = (CANVAS_HEIGHT * .5 + 5) - parseInt(START_HEIGHT)
-          finishNotes.current = []
+          // notesRef.current.y = (CANVAS_HEIGHT * .5 + 5) - parseInt(START_HEIGHT)
+          // finishNotes.current = []
+          // notesRef.current.y = notesRef.current.y
           gaspRef.current.restart()
         } else {
           gaspRef.current.resume()
@@ -303,28 +369,48 @@ export default (props: any) => {
       }, 0)
     }
 
+    
+
+
   }, [])
   useEffect(() => {
 
     if (midiTracks.length === 0) return
     
     initMusicEvent()
+
+    setTimeout(() => {
+      switchRef.current.mask = maskRef.current
+    }, 1000)
+
+    // 
     
   }, [midiTracks])
 
-  const excludes: string[] = [ "C6", "D6", "E6"] // "A5", "B5", "F5", "G5",
+  const excludes: string[] = [ ] // "C6", "D6", "E6", "A5", "B5", "F5", "G5",
   // const excludes: string[] = ["A6", "B6", "F6", "G6", 'A3', 'B3', 'F3', 'G3', "C3", "D3", "E3"]
   const notekeys: string[] = Object.keys(audioData).filter((k: string)=> !excludes.includes(k)) 
   const cubes = [cb, cr, cy]
+  const notefs = [nfb, nfr, nfg]
+
 
   return <div className={SHOWARROW ? '' : 'cursor-none'}>
-  <Stage className="mt-4 ml-3" ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#fff' }} >
+  <Stage onWheel={onWheelEvent} className="mt-4 ml-3" ref={stageRef} options={{height: CANVAS_HEIGHT, width: CANVAS_WIDTH, background: '#fff' }} >
     <Container ref={mainContainer} x={0} y={0}>
       <Sprite  texture={Texture.from(woodConsole)} interactive={true} onpointerdown={playMusicEvent}  />
       <Sprite texture={Texture.from(bricksframe)} y={10} x={15} />
     </Container>
 
     <Sprite ref={maskRef} width={CANVAS_WIDTH - 70} height={418} texture={Texture.WHITE} x={35}  y={20} tint="0x000000" />
+    
+    {
+      bgimgs.length > 0 &&
+        <Container alpha={.25} ref={switchRef}>
+          <AnimatedSwitch x={41} y={20} width={TEXT_WIDTH} texture={bgimgs} />
+        </Container>
+
+    }
+
 
     <Sprite texture={Texture.from(middleStick)}  y={475} x={25} width={510} height={25} />
 
@@ -342,7 +428,7 @@ export default (props: any) => {
                 playAudioByNoteText(key)
               }}
               getPlay={(play: any) => {
-                console.log(key)
+                // console.log(key)
                 aniContainer.current = { ...aniContainer.current, [key]: play }
               }}
               speed={0.15}
@@ -395,20 +481,37 @@ export default (props: any) => {
     </Container>
 
     {/* 符號 */}
-    <Container x={42} y={418}> 
+    <Container x={42} y={421}> 
       {
         notekeys
-          .map((key: string, index: number) => <Sprite width={NOTE_SIZE} height={NOTE_SIZE} texture={Texture.WHITE} x={notePosition[key] * (TEXT_WIDTH / Object.keys(notePosition).length) }  y={0} tint="0xEEEEEE">
-            <Text x={0} y={2}  style={{ fill: '#000000', fontSize: 11, align: 'center' }} text={key} /> 
-          </Sprite>)
+          .map((key: string, index: number) => <Container x={notePosition[key] * (TEXT_WIDTH / Object.keys(notePosition).length) }  y={0}>
+            
+            
+            <AnimatedSprite speed={0.25} width={NOTE_SIZE} height={NOTE_SIZE} 
+          // texture={Texture.from(notefs[Math.floor(notefs.length * Math.random())])} 
+
+          texture={[notefs[Math.floor(notefs.length * Math.random())], nfn]}
+          getPlay={(play: any) => {
+            // console.log(key)
+            aniContainer.current = { ...aniContainer.current, ['n' + key]: play }
+          }}
+
+
+             tint="0xEEEEEE">
+          </AnimatedSprite>
+            <Text x={3} y={3} zIndex={1000}  style={{ fill: '#ffffff', fontSize: 11, align: 'center' }} text={key} /> 
+          </Container>
+          )
       }
 
     </Container>
   </Stage>
+  <div className="absolute top-9 left-[55px] w-[471px] bg-gradient-to-b from-black via-black/80 to-transparent pt-2 pb-5">
+    <div className="text-white font-bold shadow-sm  text-center pt-1 pb-3">{ MUSICBOX_TITLE }</div>
+    <div className="bg-gradient-to-b from-blue-800/70 to-blue-900/70 border-2 border-gray-300 w-[453px] py-2 rounded-lg mx-auto">
+      <Sheet ref={noteSheetRef} />
+    </div>
 
-  <div className="text-frame">
-    <div className="title">{ MUSICBOX_TITLE }</div>
-    <div className="sub">{ MUSICBOX_SUBTITLE }</div>
   </div>
   
 

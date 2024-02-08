@@ -53,7 +53,7 @@ export default (props: any) => {
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
   const NOTE_GAP: number = 100
-  const DURATION: number = .1 / 9
+  const DURATION: number = .1 / 10.5
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -241,7 +241,7 @@ export default (props: any) => {
   
   function playMusicEvent (event: any) {
     console.log("start")
-    copyToClipboard(`【懷舊】 ${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} Music Box 引用的影片 https://www.youtube.com/watch?v=${ytId}`)
+    copyToClipboard(`【懷舊】 ${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} #musicbox #音樂盒 引用的影片 https://www.youtube.com/watch?v=${ytId}`)
     
 
     if (!!gaspRef.current) {
