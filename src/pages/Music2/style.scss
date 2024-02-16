@@ -1,0 +1,72 @@
+.video-frame {
+  @apply fixed left-[140px] top-[400px] bg-gray-800 py-2 rounded-xl rounded-br-3xl aspect-[4/3] w-[390px] flex justify-center items-center;
+  &.wide {
+    @apply left-[70px] aspect-[16/9.5] w-[500px];
+  }
+  box-shadow: 0 1px 0 0 #fff, 0 0 0 2px #000 inset;
+  > div.gapside {
+    &::after {
+      content: '';
+      // @apply block w-1/2 h-full bg-white/10 absolute right-0 top-0 rounded-tr-xl rounded-br-3xl;
+      @apply block w-full h-1/3 bg-gradient-to-b from-transparent to-white/5 absolute right-0 top-0 rounded-t-xl  rounded-b-xl;
+    }
+    @apply flex justify-center items-center;
+    .light {
+      @apply w-2 h-2 rounded-full bg-yellow-400;
+    }
+  }
+  iframe {
+    // @apply scale-[143%];
+    // @apply scale-[160%];
+    // opacity: 0.75;
+    
+  }
+
+  div.video-iframe {
+    @apply relative;
+    &::before {
+      content: '';
+      @apply absolute left-0 top-0 bottom-0 right-0 z-10 opacity-50;
+      background: transparent url(/public/images/dotg.png);
+      pointer-events: none;
+
+    }
+    @apply overflow-hidden;
+    // @apply sepia;
+    iframe {
+      // @apply scale-y-125 translate-y-1;
+      // @apply scale-[150%];
+      // @apply scale-[125%];
+      // @apply scale-x-75;
+      // @apply scale-[131%] translate-y-10;
+      // @apply opacity-50;
+      // video {
+      //   @apply grayscale-[.15];
+
+      // }
+      // @apply blur-sm;
+      // @apply contrast-[125%];
+    }
+  }
+}
+
+.text-frame {
+  @apply fixed left-[580px] top-[450px];
+  &.wide {
+    @apply left-[610px];
+  }
+  > div {
+    @apply max-w-[600px] w-full ;
+  }
+  .title {
+    @apply text-[60px] font-bold text-black/70 drop-shadow-md leading-[48px];
+    text-shadow: #ffffff6d 0 1px;
+    font-Family: '"vt323", "Fjalla One", "Source Sans Pro" "Handwriting"';
+    src: url('/public/ttf/VT323-Regular.ttf');
+  }
+  .sub {
+    @apply text-3xl font-bold  text-gray-900 mt-3;
+    font-family: '"Fjalla One", "Source Sans Pro", Helvetica, sans-serif';
+    text-shadow: #ffffff6d 0 1px;
+  }
+}
