@@ -53,7 +53,7 @@ export default (props: any) => {
   const CANVAS_WIDTH: number = 1280
   const CANVAS_HEIGHT: number = 720
   const NOTE_GAP: number = 100
-  const DURATION: number = .1 / 10.5
+  const DURATION: number = .1 / 9
 
   const location = useLocation()
   const [name, chosens] = (location.pathname.split('/').slice(-2))
@@ -182,7 +182,27 @@ export default (props: any) => {
       ? name
       : `/public/music/midi/${name}.mid`;
     const { tracks } = await Midi.fromUrl(_name)
-    const _tracks = tracks.filter((track: any) => track.notes.length > 0)
+    const _tracks = tracks
+      .filter((track: any) => track.notes.length > 0)
+      .map((track) => {
+
+        // track.notes.forEach((note: any) => {
+        //   note.name = note.name.slice(0, note.name.length - 1) + (parseInt(note.name.slice(-1)) - 2)
+          
+        // })
+
+        // console.log(track.notes)
+
+        // const notes = track.notes.map((note: any) => ({
+        //   ...note,
+        //   name: note.name.at(0) + (parseInt(note.name.at(1)) - 1)
+        // }))
+        // console.log(notes)
+
+        return track
+      })
+    
+
     setTracks(_tracks)
   }
 
@@ -204,6 +224,7 @@ export default (props: any) => {
         if (equalZeroSprite.length > 0) {
           finishNotes.current = finishNotes.current.concat(equalZeroSprite)
           equalZeroSprite.forEach((sprite: any) => {{
+            // console.log(sprite.alt)
             playAudioByNoteText(sprite.alt);
           }})
           showProcess(notesRef.current.height, notesRef.current.y)

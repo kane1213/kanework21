@@ -205,7 +205,29 @@ export default (props: any) => {
       ? name
       : `/public/music/midi/${name}.mid`;
     const { tracks } = await Midi.fromUrl(_name)
-    const _tracks = tracks.filter((track: any) => track.notes.length > 0)
+    // const _tracks = tracks.filter((track: any) => track.notes.length > 0)
+
+    const _tracks = tracks
+      .filter((track: any) => track.notes.length > 0)
+      .map((track) => {
+
+        // track.notes.forEach((note: any) => {
+        //   note.name = note.name.slice(0, note.name.length - 1) + (parseInt(note.name.slice(-1)) - 2)
+        // })
+
+        // console.log(track.notes)
+
+        // const notes = track.notes.map((note: any) => ({
+        //   ...note,
+        //   name: note.name.at(0) + (parseInt(note.name.at(1)) - 1)
+        // }))
+        // console.log(notes)
+
+        return track
+      })
+    
+
+
     setTracks(_tracks)
   }
 
@@ -358,7 +380,7 @@ export default (props: any) => {
     if (mainContainer.current) {
       setTimeout(() => {
         const scale: number = CANVAS_WIDTH / mainContainer.current.width
-        console.log({ scale, current: mainContainer.current })
+        // console.log({ scale, current: mainContainer.current })
         // mainContainer.current.scale = scale;
 
         mainContainer.current.width *= scale
@@ -380,7 +402,7 @@ export default (props: any) => {
     initMusicEvent()
 
     setTimeout(() => {
-      switchRef.current.mask = maskRef.current
+      // switchRef.current.mask = maskRef.current
     }, 1000)
 
     // 
@@ -506,9 +528,9 @@ export default (props: any) => {
 
     </Container>
   </Stage>
-  <div className="absolute top-9 left-[55px] w-[471px] bg-gradient-to-b from-black via-black/80 to-transparent pt-2 pb-5">
-    <div className="text-white font-bold shadow-sm  text-center pt-1 pb-3">{ MUSICBOX_TITLE }</div>
-    <div className="bg-gradient-to-b from-blue-800/70 to-blue-900/70 border-2 border-gray-300 w-[453px] py-2 rounded-lg mx-auto">
+  <div className="absolute top-9 left-[55px] w-[471px] h-[400px] bg-gradient-to-b from-black/80 via-black/25 to-transparent pt-5 pb-28 flex flex-col justify-between">
+    <div className="text-white text-2xl font-bold shadow-sm  text-center pt-1 pb-10">{ MUSICBOX_TITLE }</div>
+    <div className="bg-gradient-to-b from-blue-800/20 to-blue-900/20 border-2 border-gray-300 w-[453px] py-2  rounded-lg mx-auto">
       <Sheet ref={noteSheetRef} />
     </div>
 
