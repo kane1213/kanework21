@@ -19,7 +19,6 @@
     // @apply scale-[143%];
     // @apply scale-[160%];
     // opacity: 0.75;
-    
   }
 
   div.video-iframe {
@@ -29,14 +28,13 @@
       @apply absolute left-0 top-0 bottom-0 right-0 z-10 opacity-50;
       background: transparent url(/public/images/dotg.png);
       pointer-events: none;
-
     }
     @apply overflow-hidden;
     // @apply sepia;
     iframe {
       // @apply scale-y-125 translate-y-1;
       // @apply scale-[150%];
-      // @apply scale-[125%];
+      // @apply scale-[140%];
       // @apply scale-x-75;
       // @apply scale-[131%] translate-y-10;
       // @apply opacity-50;
@@ -56,12 +54,12 @@
     @apply left-[610px];
   }
   > div {
-    @apply max-w-[600px] w-full ;
+    @apply max-w-[600px] w-full;
   }
   .title {
     @apply text-[60px] font-bold text-black/70 drop-shadow-md leading-[48px];
     text-shadow: #ffffff6d 0 1px;
-    font-Family: '"vt323", "Fjalla One", "Source Sans Pro" "Handwriting"';
+    font-family: '"vt323", "Fjalla One", "Source Sans Pro" "Handwriting"';
     src: url('/public/ttf/VT323-Regular.ttf');
   }
   .sub {

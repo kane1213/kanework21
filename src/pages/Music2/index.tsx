@@ -262,7 +262,7 @@ export default (props: any) => {
   
   function playMusicEvent (event: any) {
     console.log("start")
-    copyToClipboard(`【懷舊】 ${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} #musicbox #音樂盒 引用的影片 https://www.youtube.com/watch?v=${ytId}`)
+    copyToClipboard(`${MUSICBOX_TITLE} - 【懷舊】${MUSICBOX_SUBTITLE} #musicbox #音樂盒 引用的影片 https://www.youtube.com/watch?v=${ytId}`)
     
 
     if (!!gaspRef.current) {

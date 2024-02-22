@@ -202,13 +202,6 @@ export default (props: any) => {
 
   
   function playMusicEvent () {
-<<<<<<< HEAD
-    playMusicBox([
-      1,1,5,5,6,6,5,-1,,4,4,3,3,2,2,1,-1,
-      5,5,4,4,3,3,2,-1,5,5,4,4,3,3,2,-1,
-      1,1,5,5,6,6,5,-1,4,4,3,3,2,2,1
-    ].map(num => num ? noteIndex[num] : noteIndex[0] ));
-=======
 
     if (!!gaspRef.current) {
       if (gaspRef.current.isActive()) {
@@ -232,7 +225,6 @@ export default (props: any) => {
     // player.current.play(10)
     // player.current.stopVideo()
     // player.current.playVideo();
->>>>>>> music21
   }
 
   useEffect(() => {
