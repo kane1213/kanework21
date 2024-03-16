@@ -16,6 +16,7 @@ import Sheet from './notesheet'
 import bricksframe from '/public/images/kalimba/bricksframe.png'
 import woodConsole from '/public/images/kalimba/console.png'
 import stick from '/public/images/kalimba/stick_w.png'
+import stickd from '/public/images/kalimba/stick_wd.png'
 import middleStick from '/public/images/kalimba/middleStick.png'
 import stickDark from '/public/images/kalimba/stick_wb.png'
 import stickTop from '/public/images/kalimba/stick_t.png'
@@ -158,43 +159,41 @@ export default () => {
   }, [notes])
 
   const notePosition = [
-    'E6',
-    'C6',
-    'A5',
-    'F5',
-    'D5',
-    'B4',
-    'G4',
-    'E4',
-    'C4',
-    'A3',
-    'F3',
-    'D3',
-    'C3',
-    'E3',
-    'G3',
-    'B3',
-    'D4',
-    'F4',
-    'A4',
-    'C5',
-    'E5',
-    'G5',
-    'B5',
-    'D6',
+    ['D6', 'D#6'],
+    ['B5', 'C6'],
+    ['G5', 'G#5'],
+    ['E5', 'F5'],
+    ['C5', 'C#5'],
+    ['A4', 'A#4'],
+    ['F4', 'B3'],
+    ['D4', 'G3'],
+    ['C4', 'F3'],
+    ['E4', 'A3'],
+    ['G4', 'G#4'],
+    ['B4', ''],
+    ['D5', 'D#5'],
+    ['F5', 'F#5'],
+    ['A5', 'A#5'],
+    ['C6', 'C#6'],
+    ['E6', 'F6'],
   ].reduce(
-    (sum: { [k: string]: number }, text: string, index: number) => ({
+    (
+      sum: { [k: string]: { x: number; y: number } },
+      text: string[],
+      index: number
+    ) => ({
       ...sum,
-      [text]: index,
+      [text[0]]: { x: index, y: 0 },
+      [text[1]]: { x: index, y: 1 },
     }),
     {}
   )
   // const notePosition = { 'D6': 0,  B5: 1,  G5: 2,  E5: 3,  C5: 4,  A4: 5,  F4: 6,  D4: 7,  C4: 8,  E4: 9,  G4: 10,  B4: 11,  D5: 12,  F5: 13,  A5: 14,  C6: 15,  E6: 16,}
 
-  const noteNumber: number = Object.keys(notePosition).length
+  const noteNumber: number = 17
 
-  const NOTE_SIZE: number = TEXT_WIDTH / (noteNumber + 3.5)
-  const stickWidth: number = TEXT_WIDTH / (noteNumber + 3.5)
+  const NOTE_SIZE: number = TEXT_WIDTH / (noteNumber + 3)
+  const stickWidth: number = TEXT_WIDTH / (noteNumber + 3)
 
   function playAudioByNoteText(text: string) {
     if (!text) return
@@ -376,7 +375,7 @@ export default () => {
           // const _num = parseInt(_name.slice(-1)[0]) - 1
           // const name = _name.substring(0, 1) + _num
 
-          const name = note.name.replace('#', '')
+          const name = note.name
 
           return { ...note, name, time: note.time }
         })
@@ -508,60 +507,65 @@ export default () => {
 
         <Sprite
           texture={Texture.from(middleStick)}
-          y={475}
+          y={482}
           x={25}
           width={510}
           height={25}
         />
 
-        <Container x={38} y={512}>
-          {notekeys.map((key: string, index: number) => (
-            <>
-              <Sprite
-                width={stickWidth}
-                height={stickWidth * 0.75}
-                texture={Texture.WHITE}
-                x={index * (TEXT_WIDTH / Object.keys(notePosition).length)}
-                y={-15}
-                tint="0x000000"
-              />
+        <Container x={42} y={520}>
+          {notekeys.map((key: string, index: number) => {
+            const x =
+              _.get(notePosition[key], 'x', 0) * (TEXT_WIDTH / noteNumber)
 
-              <Sprite
-                width={stickWidth}
-                texture={Texture.from(stickTop)}
-                x={index * (TEXT_WIDTH / Object.keys(notePosition).length)}
-                y={-70}
-              />
-              <AnimatedSprite
-                onpointerdown={() => {
-                  playAudioByNoteText(key)
-                }}
-                getPlay={(play: any) => {
-                  // console.log(key)
-                  aniContainer.current = {
-                    ...aniContainer.current,
-                    [key]: play,
+            const hgt = _.get(notePosition[key], 'y', 0) * 40
+            if (key.includes('3')) {
+              console.log({ key, x })
+            }
+            return (
+              <>
+                <Sprite
+                  width={stickWidth}
+                  height={stickWidth * 0.75}
+                  texture={Texture.WHITE}
+                  x={x}
+                  y={-15}
+                  tint="0x000000"
+                />
+
+                <Sprite
+                  width={stickWidth}
+                  texture={Texture.from(stickTop)}
+                  x={x}
+                  y={-70}
+                />
+                <AnimatedSprite
+                  onpointerdown={() => {
+                    playAudioByNoteText(key)
+                  }}
+                  getPlay={(play: any) => {
+                    // console.log(key)
+                    aniContainer.current = {
+                      ...aniContainer.current,
+                      [key]: play,
+                    }
+                  }}
+                  speed={0.15}
+                  texture={[hgt === 0 ? stickd : stick, stickDark]}
+                  key={key}
+                  x={x}
+                  y={0}
+                  width={stickWidth}
+                  height={
+                    40 +
+                    (200 -
+                      Math.abs(8 - _.get(notePosition[key], 'x', 0)) * 12) -
+                    hgt
                   }
-                }}
-                speed={0.15}
-                texture={[stick, stickDark]}
-                key={key}
-                x={
-                  notePosition[key] *
-                  (TEXT_WIDTH / Object.keys(notePosition).length)
-                }
-                width={stickWidth}
-                height={
-                  40 +
-                  (200 -
-                    Math.abs(
-                      Math.floor(notekeys.length * 0.5) - notePosition[key]
-                    ) *
-                      12)
-                }
-              />
-            </>
-          ))}
+                />
+              </>
+            )
+          })}
         </Container>
 
         <Container ref={notesRef} x={38}>
@@ -572,13 +576,6 @@ export default () => {
               return notes
                 .filter((note: any) => note.time < 46)
                 .map((note: any, noteIndex: number) => {
-                  // const adj = note.time > 47.9
-                  //   ? 3.4
-                  //   : note.time > 21
-                  //     ? 2.4
-                  //     : note.time > 8.2
-                  //       ? .75
-                  //       : 0
                   const adj = 0
 
                   return (
@@ -608,7 +605,7 @@ export default () => {
                       width={NOTE_SIZE}
                       height={NOTE_SIZE}
                       x={
-                        notePosition[key] *
+                        _.get(notePosition[key], 'x', 0) *
                           (TEXT_WIDTH / Object.keys(notePosition).length) +
                         4
                       }
@@ -624,42 +621,41 @@ export default () => {
 
         {/* 符號 */}
         <Container x={42} y={421}>
-          {notekeys.map((key: string, index: number) => (
-            <Container
-              x={
-                notePosition[key] *
-                (TEXT_WIDTH / Object.keys(notePosition).length)
-              }
-              y={0}
-            >
-              <AnimatedSprite
-                speed={0.25}
-                width={NOTE_SIZE}
-                height={NOTE_SIZE}
-                // texture={Texture.from(notefs[Math.floor(notefs.length * Math.random())])}
+          {notekeys.map((key: string, index: number) => {
+            const x =
+              _.get(notePosition[key], 'x', 0) * (TEXT_WIDTH / noteNumber)
+            const y = _.get(notePosition[key], 'y', 0) * -25
+            return (
+              <Container x={x} y={y}>
+                <AnimatedSprite
+                  speed={0.25}
+                  width={NOTE_SIZE}
+                  height={NOTE_SIZE}
+                  // texture={Texture.from(notefs[Math.floor(notefs.length * Math.random())])}
 
-                texture={[
-                  notefs[Math.floor(notefs.length * Math.random())],
-                  nfn,
-                ]}
-                getPlay={(play: any) => {
-                  // console.log(key)
-                  aniContainer.current = {
-                    ...aniContainer.current,
-                    ['n' + key]: play,
-                  }
-                }}
-                tint="0xEEEEEE"
-              ></AnimatedSprite>
-              <Text
-                x={3}
-                y={3}
-                zIndex={1000}
-                style={{ fill: '#ffffff', fontSize: 11, align: 'center' }}
-                text={key}
-              />
-            </Container>
-          ))}
+                  texture={[
+                    notefs[Math.floor(notefs.length * Math.random())],
+                    nfn,
+                  ]}
+                  getPlay={(play: any) => {
+                    // console.log(key)
+                    aniContainer.current = {
+                      ...aniContainer.current,
+                      ['n' + key]: play,
+                    }
+                  }}
+                  tint="0xEEEEEE"
+                ></AnimatedSprite>
+                <Text
+                  x={3}
+                  y={3}
+                  zIndex={1000}
+                  style={{ fill: '#ffffff', fontSize: 11, align: 'center' }}
+                  text={key}
+                />
+              </Container>
+            )
+          })}
         </Container>
       </Stage>
       <div className=" absolute top-9 left-[55px] w-[471px] h-[400px] bg-gradient-to-b from-black/80 via-black/25 to-transparent pt-5 pb-6 flex flex-col justify-between">
