@@ -31,7 +31,7 @@ import nfn from '/public/images/kalimba/notef_w.png'
 import bgimgs from './bgimgs'
 
 import './style.scss'
-export default (props: any) => {
+export default () => {
   let MUSICBOX_TITLE: string = ''
   let MUSICBOX_SUBTITLE: string = ''
   let START_HEIGHT = 0
@@ -54,7 +54,6 @@ export default (props: any) => {
     MUSICBOX_TITLE = query.title ? decodeURI(query.title) : ''
     MUSICBOX_SUBTITLE = query.subtitle ? decodeURI(query.subtitle) : ''
     if (query?.start) START_HEIGHT = query.start
-    if (query?.ytId) ytId = query?.ytId
     if (query?.showArrow) SHOWARROW = true
     if (query?.repeat) REPEAT = true
   }
@@ -62,7 +61,7 @@ export default (props: any) => {
   const CANVAS_WIDTH: number = 555
   const CANVAS_HEIGHT: number = CANVAS_WIDTH * 1.778
   const NOTE_GAP: number = 200
-  const DURATION: number = 0.1 / 10.5
+  const DURATION: number = 0.1 / 9
   const TEXT_WIDTH = 474
   const location = useLocation()
   const [name, chosens] = location.pathname.split('/').slice(-2)
@@ -349,14 +348,14 @@ export default (props: any) => {
     _list.forEach((notes: any) => {
       _.orderBy(notes, ['time'], ['desc']).forEach(
         (note: any, index: number, list: any) => {
-          if (index === 0) return
+          if (index === 0 || list[index - 1].shouldDelete) return
           // if (note.name === 'C5') {
           //   const prev = list[index - 1]
           //   console.log(prev.time, note.time, prev.time - note.time)
           // }
           const diff = Math.abs(note.time - list[index - 1].time)
           // if (note.name === 'C5') console.log({ diff })
-          if (diff < 0.1) {
+          if (diff < 0.2) {
             note['shouldDelete'] = true
           }
         }
@@ -368,13 +367,19 @@ export default (props: any) => {
 
   function initMusicEvent() {
     if (chosen.length === 0) return
-
     const _notes: any = midiTracks
       .filter((_: any, index: number) => chosen.includes(index))
       .flatMap((track: any) => {
+        console.log(track)
         const _newNotes = track.notes.map((note: any) => {
-          // const time = Math.floor(note.time) + (note.time % 1 > 0 ? 0.5:0)
-          return { ...note, name: note.name.replace('#', ''), time: note.time }
+          // const time = Math.floor(note.time) + (note.time % 1 > 0 ? 0.5 : 0)
+          // const _name = note.name.replace('#', '')
+          // const _num = parseInt(_name.slice(-1)[0]) - 1
+          // const name = _name.substring(0, 1) + _num
+
+          const name = note.name.replace('#', '')
+
+          return { ...note, name, time: note.time }
         })
         return _newNotes
       })
@@ -382,7 +387,8 @@ export default (props: any) => {
     // notesRef.current.y = -_notes.slice(-1)[0].time * NOTE_GAP
     notesRef.current.y = 360
     notesRef.current.mask = maskRef.current
-    const _noteList = filternotes(_notes)
+    // const _noteList = filternotes(_notes)
+    const _noteList = _notes
 
     setNotes(_noteList)
   }
@@ -406,7 +412,6 @@ export default (props: any) => {
   }
 
   function playMusicEvent(event: any) {
-    // copyToClipboard(`【懷舊】 ${MUSICBOX_TITLE} - ${MUSICBOX_SUBTITLE} Music Box 引用的影片 https://www.youtube.com/watch?v=${ytId}`)
     if (!!gaspRef.current) {
       if (gaspRef.current.paused()) {
         if (event.ctrlKey) {
@@ -437,7 +442,6 @@ export default (props: any) => {
     // gsap.to(wheelRefOne.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
     // gsap.to(wheelRefTwo.current, { y: -40, duration: 1, repeat: -1, ease: "linear" })
 
-    // if (!!ytId) handleVideo()
     if (mainContainer.current) {
       setTimeout(() => {
         const scale: number = CANVAS_WIDTH / mainContainer.current.width
@@ -456,12 +460,6 @@ export default (props: any) => {
     if (midiTracks.length === 0) return
 
     initMusicEvent()
-
-    setTimeout(() => {
-      // switchRef.current.mask = maskRef.current
-    }, 1000)
-
-    //
   }, [midiTracks])
 
   const excludes: string[] = [] // "C6", "D6", "E6", "A5", "B5", "F5", "G5",
@@ -504,7 +502,7 @@ export default (props: any) => {
         />
 
         {bgimgs.length > 0 && (
-          <Container alpha={0.25} ref={switchRef}>
+          <Container alpha={0.5} ref={switchRef}>
             <AnimatedSwitch x={41} y={20} width={TEXT_WIDTH} texture={bgimgs} />
           </Container>
         )}
@@ -537,7 +535,6 @@ export default (props: any) => {
               />
               <AnimatedSprite
                 onpointerdown={() => {
-                  console.log(key)
                   playAudioByNoteText(key)
                 }}
                 getPlay={(play: any) => {
@@ -666,11 +663,11 @@ export default (props: any) => {
           ))}
         </Container>
       </Stage>
-      <div className=" absolute top-9 left-[55px] w-[471px] h-[400px] bg-gradient-to-b from-black/80 via-black/25 to-transparent pt-5 pb-6 hidden flex-col justify-between">
+      <div className=" absolute top-9 left-[55px] w-[471px] h-[400px] bg-gradient-to-b from-black/80 via-black/25 to-transparent pt-5 pb-6 flex flex-col justify-between">
         <div className="text-white text-2xl font-bold shadow-sm  text-center pt-1 pb-10">
-          {MUSICBOX_TITLE}
+          <span dangerouslySetInnerHTML={{ __html: MUSICBOX_TITLE }} />
         </div>
-        <div className="bg-gradient-to-b from-blue-800/20 to-blue-900/20 border-2 border-gray-300 w-[453px] py-2  rounded-lg mx-auto">
+        <div className="bg-gradient-to-b from-blue-800/40 to-blue-900/40 border-2 border-gray-300 w-[453px] py-2  rounded-lg mx-auto">
           <Sheet ref={noteSheetRef} />
         </div>
       </div>
